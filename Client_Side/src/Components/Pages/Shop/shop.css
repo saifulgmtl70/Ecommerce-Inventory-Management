@@ -1,0 +1,91 @@
+.shop_banner{
+    background: url(https://i.ibb.co/xJvmcb8/Discount-Bannar1.png);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    position: relative;
+    z-index: 1;
+    padding: 50px 7%;
+}
+
+.shop_banner::after{
+    position: absolute;
+    content: '';
+    height: 100%;
+    width: 100%;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: #122033dc;
+    opacity: .7;
+    z-index: -1;
+}
+
+
+.select {
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 16px;
+    width: 100%;
+    max-width: 200px;
+}
+
+
+
+.specific_product_banner{
+    background: url(https://i.ibb.co/JBGhwJZ/Breadcrumbs.png);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-position:   right;
+    background-size: cover;
+    position: relative;
+    z-index: 1;
+}
+
+.specific_product_banner::after{
+    position: absolute;
+    content: '';
+    height: 100%;
+    width: 100%;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: #122033dc;
+    opacity: .7;
+    z-index: -1;
+}
+
+
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.breadcrumbs ul {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.breadcrumbs ul li {
+    display: flex;
+    align-items: center;
+}
+
+.specific_product_banner {
+    background-color: #00B207;
+    padding: 1rem;
+}
+
+.select {
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 16px;
+    width: 100%;
+    max-width: 200px;
+}

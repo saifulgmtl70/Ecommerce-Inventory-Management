@@ -1,0 +1,4 @@
+.sidemenu a.active {
+    color: #383838; 
+    background-color: #F1F5F9;/* Set the desired color for the active route */
+}

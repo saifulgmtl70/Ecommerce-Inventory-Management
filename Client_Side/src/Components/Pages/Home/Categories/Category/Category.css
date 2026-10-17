@@ -1,0 +1,11 @@
+/* Category.css */
+.custom-shadow-hover:hover {
+    box-shadow: 0 4px 6px -1px rgba(1, 132, 39, 0.4), 0 2px 4px -1px rgba(1, 132, 39, 0.06);
+    cursor: pointer;
+}
+
+.custom-shadow-hover:hover .hover-text-color {
+    color: #018426dd;
+}
+
+

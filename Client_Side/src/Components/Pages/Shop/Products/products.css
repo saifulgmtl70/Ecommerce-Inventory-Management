@@ -1,0 +1,85 @@
+.heart_eye{
+    display: none;
+}
+
+
+
+
+.product_Card:hover{
+    box-shadow: 0 4px 6px -1px rgba(1, 132, 39, 0.4), 0 2px 4px -1px rgba(1, 132, 39, 0.06);
+    cursor: pointer;
+    transition: ease-in-out;
+    transition-delay: .7s;
+}
+
+.product_Card:hover .hover-text-color{
+    color: #018426dd;
+}
+
+.product_Card:hover .heart_eye{
+    display: block;
+}
+
+.product_Card:hover .cart{
+    background-color: #018426dd;
+    color: white;
+}
+
+
+
+/* Modal Css */
+
+/* popularproducts.css */
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-box {
+    background: white;
+    padding: 20px;
+    border-radius: 4px;
+    max-width: 800px;
+    width: 100%;
+    position: relative;
+}
+
+.modal-image {
+    width: 250px;
+    height: 200px;
+    margin: 10px 0;
+}
+
+.btn-circle {
+    border-radius: 50%;
+}
+
+.btn-ghost {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.w-16 {
+    width: 4rem;
+}
+
+.h-16 {
+    height: 4rem;
+}
+
+.mb-2 {
+    margin-bottom: 0.5rem;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}

@@ -1,0 +1,137 @@
+[
+    {
+        "id": 1,
+        "name": "Green Apple",
+        "description": "Fresh and crispy green apples.",
+        "category": "Fruits",
+        "price": "$12.00",
+        "original_price": "$24.00",
+        "image": "https://i.ibb.co/nfxnQw1/Image.png",
+        "sale": "50%",
+        "rating": 4.5,
+        "availability": "In Stock",
+        "deal_end_time": "00:04:34:21" 
+    },
+    {
+        "id": 2,
+        "name": "Chinese Cabbage",
+        "description": "Fresh Chinese cabbage, perfect for salads.",
+        "category": "Vegetables",
+        "price": "$12.00",
+        "image": "https://i.ibb.co/FH3vqwS/Image-2.png",
+        "rating": 4.8,
+        "availability": "In Stock",
+        "deal_end_time": "00:02:18:46"
+    },
+    {
+        "id": 3,
+        "name": "Green Lettuce",
+        "description": "Crisp green lettuce for your salads.",
+        "category": "Vegetables",
+        "price": "$9.00",
+        "image": "https://i.ibb.co/rfDWq9y/Image-3.png",
+        "rating": 4.2,
+        "availability": "In Stock",
+        "deal_end_time": "00:03:12:15"
+    },
+    {
+        "id": 4,
+        "name": "Eggplant",
+        "description": "Fresh eggplants, perfect for cooking.",
+        "category": "Vegetables",
+        "price": "$34.00",
+        "image": "https://i.ibb.co/q53mwTW/Image-4.png",
+        "rating": 4.5,
+        "availability": "In Stock",
+        "deal_end_time": "00:05:08:30"
+    },
+    {
+        "id": 5,
+        "name": "Fresh Cauliflower",
+        "description": "Organic cauliflower, perfect for any meal.",
+        "category": "Vegetables",
+        "price": "$12.00",
+        "image": "https://i.ibb.co/T2cCmYM/Image-7.png",
+        "rating": 4.7,
+        "availability": "In Stock",
+        "deal_end_time": "00:06:24:50"
+    },
+    {
+        "id": 6,
+        "name": "Green Capsicum",
+        "description": "Crunchy green capsicum, perfect for salads and cooking.",
+        "category": "Vegetables",
+        "price": "$9.00",
+        "image": "https://i.ibb.co/ckKtm6K/Image-8.png",
+        "sale": "50%",
+        "rating": 4.4,
+        "availability": "Out of Stock",
+        "deal_end_time": "00:04:20:40"
+    },
+    {
+        "id": 7,
+        "name": "Green Chili",
+        "description": "Spicy green chili peppers.",
+        "category": "Vegetables",
+        "price": "$34.00",
+        "image": "https://i.ibb.co/7tRY18Y/Image-9.png",
+        "rating": 4.6,
+        "availability": "Out of Stock",
+        "deal_end_time": "00:01:22:10"
+    },
+    {
+        "id": 8,
+        "name": "Big Potatoes",
+        "description": "Large, starchy potatoes.",
+        "category": "Vegetables",
+        "price": "$20.00",
+        "image": "https://i.ibb.co/pnBZWWC/Image-5.png",
+        "rating": 4.3,
+        "availability": "Out of Stock",
+        "deal_end_time": "00:02:30:45"
+    },
+    {
+        "id": 9,
+        "name": "Corn",
+        "description": "Sweet and fresh corn.",
+        "category": "Vegetables",
+        "price": "$20.00",
+        "image": "https://i.ibb.co/j44NtW4/Image-6.png",
+        "rating": 4.1,
+        "availability": "Out of Stock",
+        "deal_end_time": "00:03:50:55"
+    },
+    {
+        "id": 10,
+        "name": "Red Chili",
+        "description": "Spicy red chili peppers.",
+        "category": "Vegetables",
+        "price": "$10.00",
+        "image": "https://i.ibb.co/YT112K2/Image-9.png",
+        "rating": 4.5,
+        "availability": "In Stock",
+        "deal_end_time": "00:05:45:20"
+    },
+    {
+        "id": 11,
+        "name": "Red Tomatoes",
+        "description": "Fresh and juicy red tomatoes.",
+        "category": "Vegetables",
+        "price": "$8.00",
+        "image": "https://i.ibb.co/5sx8F5h/Image-10.png",
+        "rating": 4.4,
+        "availability": "In Stock",
+        "deal_end_time": "00:04:15:35"
+    },
+    {
+        "id": 12,
+        "name": "Sugar Mango",
+        "description": "Sweet and delicious sugar mango.",
+        "category": "Fruits",
+        "price": "$14.00",
+        "image": "https://i.ibb.co/TPsL9jj/Image-11.png",
+        "rating": 4.6,
+        "availability": "In Stock",
+        "deal_end_time": "00:06:10:05"
+    }
+]

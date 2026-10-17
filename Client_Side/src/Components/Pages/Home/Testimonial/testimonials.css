@@ -1,0 +1,31 @@
+.nunito_sans {
+    font-family: 'Nunito Sans', sans-serif;
+}
+.slick-prev:before, .slick-next:before {
+    color: black;
+}
+.slick-dots li button:before {
+    color: black;
+}
+
+
+.slick-arrow slick-next,
+.slick-arrow slick-prev{
+    background-color: #00B307;
+    color: #fff;
+}
+
+
+
+.custom-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 2;
+}
+
+

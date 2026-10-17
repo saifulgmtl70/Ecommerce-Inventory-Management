@@ -1,0 +1,54 @@
+.footer{
+    background-image: url('https://i.ibb.co/vVM5YFg/Left.png'), 
+    url('https://i.ibb.co/xFnLBj0/right.png');
+    position: relative;
+    z-index: 1;
+    background-position:  bottom left,  bottom right;
+    background-repeat: no-repeat;
+}
+
+.footer::after{
+    position: absolute;
+    content: '';
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: #002603;
+    opacity: .5;
+    z-index: -1;
+}
+
+
+
+
+/* TopButton.css */
+
+.top-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #09b817; /* Adjust the color to your preference */
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+  
+  .top-button:hover {
+    background-color: #0d9919; /* Adjust the hover color */
+  }
+  
+
+  .top-button.visible {
+    /* Styles for the visible state */
+    opacity: 1;
+    visibility: visible;
+  }

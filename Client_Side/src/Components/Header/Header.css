@@ -1,0 +1,11 @@
+
+.navmenu a.active {
+    color: #2C742F; 
+    font-weight: bolder;
+}
+
+
+.scrollable-container {
+    max-height: 80vh; /* Adjust the height as needed */
+    overflow-y: auto;
+  }

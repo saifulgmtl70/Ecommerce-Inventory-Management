@@ -1,0 +1,161 @@
+[
+    {
+        "name": "Green Apple",
+        "description": "Fresh and crispy green apples. These green apples are not only deliciously tart and juicy but also packed with essential vitamins and minerals. They are perfect for snacking, baking, or adding to salads. Rich in dietary fiber, they help in digestion and are a great option for a healthy diet. Enjoy them as a refreshing snack or use them to add a crisp texture and tangy flavor to your favorite dishes.",
+        "category": "Fruits",
+        "price": 14.99,
+        "images": [
+            "https://i.ibb.co/HY4LXDM/Image.png",
+            "https://i.ibb.co/GsLS6Ry/509a1203c31d0a5e4ecfce96f0df9111.png",
+            "https://i.ibb.co/TKcpZLZ/purepng-com-green-appleappleapplesfruitsweetgreen-apple-1701527181220bcxfq.png",
+            "https://i.ibb.co/sVKKjS9/red-and-green-apple-wak.png"
+        ],
+        "sale": "50%",
+        "rating": 4.5,
+        "availability": "In Stock"
+    },
+
+    {
+        "name": "Fresh Indian Malta",
+        "description": "Juicy and sweet Indian Malta oranges. These oranges are known for their rich flavor and vibrant color. Packed with Vitamin C and antioxidants, they are perfect for boosting your immune system and adding a refreshing zest to your diet. Enjoy them as a healthy snack, squeeze them for fresh juice, or use them in your favorite recipes. Their juicy and sweet taste makes them a favorite among citrus lovers.",
+        "category": "Fruits",
+        "price": 20.00,
+        "images": [
+            "https://i.ibb.co/X2zg3Vq/Image-1.png",
+            "https://i.ibb.co/XZtqZYb/pngtree-juicy-oranges-transparent-background-png-image-10194895.png",
+            "https://i.ibb.co/dWYjwX8/NRGTr0p9-RJfnp-Drp-Qj-XTg-Tyb9eo-Kl-UQP0wrnj-MVN.webp",
+            "https://i.ibb.co/GdTZS2Z/c0c40720-7b59-11ec-8c44-db3da6a0aa07.png"
+        ],
+        "sale": null,
+        "rating": 4.0,
+        "availability": "In Stock"
+    },
+
+    {
+        "name": "Chinese Cabbage",
+        "description": "Fresh Chinese cabbage, perfect for salads. This leafy green is not only delicious but also packed with nutrients. It's a staple in Asian cuisine, known for its mild flavor and crunchy texture. Chinese cabbage is an excellent source of vitamins A and C, fiber, and antioxidants. Use it in salads, stir-fries, soups, or even as a healthy wrap. Its versatility and health benefits make it a great addition to any meal.",
+        "category": "Vegetables",
+        "price": 12.00,
+        "images": [
+            "https://i.ibb.co/FH3vqwS/Image-2.png",
+            "https://i.ibb.co/fkHctx6/153494-fresh-green-lettuce-free-transparent-image-hd.png",
+            "https://i.ibb.co/16kqpQs/pngtree-lettuce-healthy-vegetables-png-image-5514181.png",
+            "https://png.pngtree.com/png-clipart/20231115/original/pngtree-lettuce-healthy-lettuce-organic-photo-png-image_13557488.png"
+        ],
+        "sale": null,
+        "rating": 4.8,
+        "availability": "In Stock"
+    },
+
+    {
+        "name": "Green Lettuce",
+        "description": "Crisp green lettuce for your salads. This lettuce is not only fresh and crunchy but also loaded with essential vitamins and minerals. Perfect for adding a refreshing bite to your salads, sandwiches, and wraps. It's a low-calorie, nutrient-dense food that helps in maintaining a healthy diet. Enjoy its crisp texture and mild flavor in a variety of dishes, or simply use it as a healthy base for your favorite salads.",
+        "category": "Vegetables",
+        "price": 9.00,
+        "images": [
+            "https://i.ibb.co/rfDWq9y/Image-3.png",
+            "https://i.ibb.co/fkHctx6/153494-fresh-green-lettuce-free-transparent-image-hd.png",
+            "https://i.ibb.co/16kqpQs/pngtree-lettuce-healthy-vegetables-png-image-5514181.png",
+            "https://i.ibb.co/3hy1xk1/pngtree-lettuce-healthy-lettuce-organic-photo-png-image-13557488.png"
+        ],
+        "sale": null,
+        "rating": 4.2,
+        "availability": "In Stock"
+    },
+
+    {
+        "name": "Eggplant",
+        "description": "Fresh eggplants, perfect for cooking. These eggplants are firm, glossy, and perfect for a variety of dishes. Whether grilled, roasted, or used in stews and casseroles, eggplants add a rich, meaty texture to any meal. They are an excellent source of dietary fiber, vitamins, and antioxidants. Incorporate them into your diet to enjoy their numerous health benefits and unique flavor.",
+        "category": "Vegetables",
+        "price": 34.00,
+        "images": [
+            "https://i.ibb.co/q53mwTW/Image-4.png",
+            "https://i.ibb.co/NpyHHfT/Eggplant-Free-Download-PNG.png",
+            "https://i.ibb.co/8gBswcR/eggplant-home-productos-agropecuarios-san-carlos-28.png",
+            "https://i.ibb.co/Y760f6Y/145847-green-brinjal-free-clipart-hd-thumb.png"
+        ],
+        "sale": null,
+        "rating": 4.5,
+        "availability": "In Stock"
+    },
+
+    {
+        "name": "Big Potatoes",
+        "description": "Large, starchy potatoes. These potatoes are perfect for baking, mashing, or frying. Their starchy texture makes them ideal for creating fluffy mashed potatoes, crispy fries, and hearty baked potatoes. Packed with essential nutrients like potassium and vitamin C, they are a versatile and healthy addition to any meal. Enjoy their rich, earthy flavor in a variety of dishes, from soups and stews to salads and casseroles.",
+        "category": "Vegetables",
+        "price": 20.00,
+        "images": [
+            "https://i.ibb.co/pnBZWWC/Image-5.png",
+            "https://i.ibb.co/V2pFLwx/potato-PNG7082.png",
+            "https://i.ibb.co/8XVJdW4/potato-29-1024x947.png",
+            "https://i.ibb.co/tPmSRvy/potato-png-image-pngpix-15.png"
+        ],
+        "sale": null,
+        "rating": 4.3,
+        "availability": "Out of Stock"
+    },
+
+    {
+        "name": "Corn",
+        "description": "Sweet and fresh corn. This corn is perfect for boiling, grilling, or adding to salads and soups. Enjoy its sweet, juicy kernels that burst with flavor in every bite. Corn is a great source of dietary fiber, vitamins, and minerals, making it a healthy addition to your meals. Use it to create delicious side dishes, salsas, or simply enjoy it on the cob with a bit of butter and salt.",
+        "category": "Vegetables",
+        "price": 20.00,
+        "images": [
+            "https://i.ibb.co/j44NtW4/Image-6.png",
+            "https://i.ibb.co/4sZbP4P/cornpng-parspng-com.png",
+            "https://i.ibb.co/Dbcf2Hy/corn-PNG98646.png",
+            "https://i.ibb.co/vqkCzxJ/Corn-10-1024x1019.png"
+        ],
+        "sale": null,
+        "rating": 4.1,
+        "availability": "Out of Stock"
+    },
+
+    {
+        "name": "Fresh Cauliflower",
+        "description": "Organic cauliflower, perfect for any meal. This cauliflower is fresh, crisp, and packed with nutrients. It's a versatile vegetable that can be used in a variety of dishes, from soups and salads to stir-fries and casseroles. Rich in vitamins, minerals, and antioxidants, cauliflower is a healthy choice for any diet. Its mild flavor and firm texture make it a great substitute for grains and legumes in low-carb diets.",
+        "category": "Vegetables",
+        "price": 12.00,
+        "images": [
+            "https://i.ibb.co/T2cCmYM/Image-7.png",
+            "https://i.ibb.co/ScwdQSD/Fresh-cauliflower-isolated-on-transparent-background-PNG.png",
+            "https://i.ibb.co/dQZScnr/fresh-cauliflower-pieces-isolated-zwdyugdg1rkdjcbg.png",
+            "https://i.ibb.co/zQX9jr0/pngtree-three-green-fresh-cauliflower-png-image-5531165.png"
+        ],
+        "sale": null,
+        "rating": 4.7,
+        "availability": "In Stock"
+    },
+
+    {
+        "name": "Green Capsicum",
+        "description": "Crunchy green capsicum, perfect for salads and cooking. These capsicums are not only deliciously crunchy but also rich in vitamins A and C. They add a vibrant color and crisp texture to your salads, stir-fries, and other dishes. Enjoy their sweet flavor and numerous health benefits, including boosting your immune system and improving skin health. Use them to add a fresh, healthy crunch to your meals.",
+        "category": "Vegetables",
+        "price": 9.00,
+        "images": [
+            "https://i.ibb.co/ckKtm6K/Image-8.png",
+            "https://i.ibb.co/w40KBbF/pepper-PNG3269.png",
+            "https://i.ibb.co/HtBC9y9/ai-generated-red-and-green-capsicum-with-png.png",
+            "https://i.ibb.co/y6mD2xN/red-capsicum-red-capsicum-transparent-background-ai-generated-free-png.png"
+        ],
+        "sale": "50%",
+        "rating": 4.4,
+        "availability": "Out of Stock"
+    },
+    
+    {
+        "name": "Green Chili",
+        "description": "Spicy green chili peppers. These chili peppers are perfect for adding a fiery kick to your dishes. They are fresh, vibrant, and packed with heat and flavor. Use them in curries, salsas, or as a spicy topping for your favorite foods. Green chilies are also rich in vitamins A and C, making them a healthy addition to your diet. Their intense heat and bold flavor are sure to enhance any meal.",
+        "category": "Vegetables",
+        "price": 34.00,
+        "images": [
+            "https://i.ibb.co/7tRY18Y/Image-9.png",
+            "https://i.ibb.co/zfFR6K9/3c425a418d2c6b4670ee7d47c799a80d.png",
+            "https://i.ibb.co/MZR1SFs/4916164.webp",
+            "https://i.ibb.co/GkKWwjG/purepng-com-red-and-green-chillivegetables-chilli-green-chilli-red-chilli-chili-941524726634azie2.png"
+        ],
+        "sale": null,
+        "rating": 4.6,
+        "availability": "Out of Stock"
+    }
+]
