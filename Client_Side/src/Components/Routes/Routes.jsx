@@ -29,7 +29,8 @@ import ManageCategory from "../AdminDashboard/ManageCategory/ManageCategory";
 import AdminRoute from "./‎AdminRoute";
 import UpdateProdut from "../AdminDashboard/ManageProduct/UpdateProdut";
 import ManageOrders from "../AdminDashboard/ManageOrders/ManageOrders";
-
+import DemoPayment from "../../Payment/DemoPayment";
+import PaymentResult from "../../Payment/PaymentResult";
 
 
 
@@ -72,6 +73,16 @@ export const router = createBrowserRouter([
         {
           path: '/checkout',
           element: <Checkout/>
+        },
+
+        {
+          path: '/demo-payment',
+          element: <DemoPayment />
+        },
+
+        {
+          path: '/payment-result',
+          element: <PaymentResult />
         },
 
         {

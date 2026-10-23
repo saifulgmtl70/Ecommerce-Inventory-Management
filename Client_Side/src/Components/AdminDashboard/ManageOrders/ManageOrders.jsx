@@ -4,8 +4,64 @@ import { Helmet } from "react-helmet-async";
 import useAxiosSecure from '../../Hooks/useAxiosSecure';
 import { FaSyncAlt } from "react-icons/fa";
 
+import { useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 const ManageOrders = () => {
     const axiosSecure = useAxiosSecure();
+
+    const [updatingOrderId, setUpdatingOrderId] = useState(null);
+    const [selectedStatuses, setSelectedStatuses] = useState({});
+
+    const orderStatuses = [
+        "pending",
+        "confirmed",
+        "processing",
+        "packed",
+        "shipped",
+        "out_for_delivery",
+        "delivered",
+        "cancelled"
+    ];
+
+const handleStatusUpdate = async (order) => {
+    const newStatus = selectedStatuses[order._id] || order.status || "pending";
+
+    if (newStatus === order.status) {
+        toast.info("Please select a different status.");
+        return;
+    }
+
+    const confirmed = window.confirm(
+        `Change order status from "${order.status}" to "${newStatus}"?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+        setUpdatingOrderId(order._id);
+
+        await axiosSecure.patch(`/orders/${order._id}/status`, {
+            status: newStatus
+        });
+
+        toast.success("Order status updated successfully!");
+
+        await refetch();
+
+    } catch (error) {
+        console.error("Order status update failed:", error);
+
+        toast.error(
+            error?.response?.data?.message ||
+            "Failed to update order status."
+        );
+
+    } finally {
+        setUpdatingOrderId(null);
+    }
+};
 
     const {
         data: orders = [],
@@ -56,6 +112,7 @@ const ManageOrders = () => {
 
     return (
         <div className="min-h-screen p-4 md:p-8">
+            <ToastContainer position="top-right" autoClose={2500} />
             <Helmet>
                 <title>Shopery | Manage Orders</title>
             </Helmet>
@@ -211,15 +268,59 @@ const ManageOrders = () => {
                                         </td>
 
                                         <td className="px-5 py-4">
-                                            <span
-                                                className={`inline-block rounded-full px-3 py-1 text-xs font-semibold capitalize ${
-                                                    statusClasses[status] ||
-                                                    "bg-gray-100 text-gray-700"
-                                                }`}
-                                            >
-                                                {status}
-                                            </span>
+                                            <div className="flex min-w-[220px] flex-col gap-2">
+                                                <span
+                                                    className={`inline-block w-fit rounded-full px-3 py-1 text-xs font-semibold capitalize ${
+                                                        statusClasses[status] ||
+                                                        "bg-gray-100 text-gray-700"
+                                                    }`}
+                                                >
+                                                    {status.replaceAll("_", " ")}
+                                                </span>
+
+                                                <select
+                                                    value={selectedStatuses[order._id] ?? status}
+                                                    onChange={(e) =>
+                                                        setSelectedStatuses((previous) => ({
+                                                            ...previous,
+                                                            [order._id]: e.target.value
+                                                        }))
+                                                    }
+                                                    disabled={
+                                                        updatingOrderId === order._id ||
+                                                        status === "delivered" ||
+                                                        status === "cancelled"
+                                                    }
+                                                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:bg-gray-100"
+                                                >
+                                                    {orderStatuses.map((orderStatus) => (
+                                                        <option
+                                                            key={orderStatus}
+                                                            value={orderStatus}
+                                                        >
+                                                            {orderStatus.replaceAll("_", " ").toUpperCase()}
+                                                        </option>
+                                                    ))}
+                                                </select>
+
+                                                <button
+                                                    onClick={() => handleStatusUpdate(order)}
+                                                    disabled={
+                                                        updatingOrderId === order._id ||
+                                                        (selectedStatuses[order._id] ?? status) === status ||
+                                                        status === "delivered" ||
+                                                        status === "cancelled"
+                                                    }
+                                                    className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+                                                >
+                                                    {updatingOrderId === order._id
+                                                        ? "Updating..."
+                                                        : "Update Status"}
+                                                </button>
+                                            </div>
                                         </td>
+
+
                                     </tr>
                                 );
                             })

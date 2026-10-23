@@ -1,23 +1,26 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Sociallogin from '../Sociallogin/Sociallogin';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import useAuth from '../../Hooks/useAuth';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import useAxiosPublic from '../../Hooks/useAxiosPublic';
-import Newsletter from '../../Pages/Shop/Products/Newsletter';
 
-import { Helmet } from 'react-helmet-async';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+import Sociallogin from "../Sociallogin/Sociallogin";
+
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
+import useAuth from "../../Hooks/useAuth";
+
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+import useAxiosPublic from "../../Hooks/useAxiosPublic";
+
+import Newsletter from "../../Pages/Shop/Products/Newsletter";
+
+import { Helmet } from "react-helmet-async";
 
 const Signup = () => {
     const [showPassword, setShowPassword] = useState(false);
-
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-
-
-
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { createUser } = useAuth();
 
@@ -25,150 +28,391 @@ const Signup = () => {
 
     const navigate = useNavigate();
 
-    const togglePasswordVisibility = () => {
-        setShowPassword(!showPassword);
-    }
+    // =====================================
+    // TOGGLE PASSWORD VISIBILITY
+    // =====================================
 
+    const togglePasswordVisibility = () => {
+        setShowPassword((previous) => !previous);
+    };
 
     const toggleConfirmPasswordVisibility = () => {
-        setShowConfirmPassword(!showConfirmPassword);
-    }
+        setShowConfirmPassword((previous) => !previous);
+    };
 
+    // =====================================
+    // SIGNUP ERROR HANDLING
+    // =====================================
 
-    const handleSignUp = (e) => {
+    const getSignupErrorMessage = (error) => {
+        switch (error.code) {
+            case "auth/email-already-in-use":
+                return "This email is already registered. Please log in.";
+
+            case "auth/invalid-email":
+                return "Please enter a valid email address.";
+
+            case "auth/weak-password":
+                return "Your password is too weak. Please choose a stronger password.";
+
+            case "auth/operation-not-allowed":
+                return "Email/Password signup is disabled in Firebase. Please enable it in Firebase Console.";
+
+            case "auth/network-request-failed":
+                return "Network error. Please check your internet connection.";
+
+            case "auth/too-many-requests":
+                return "Too many attempts. Please try again later.";
+
+            case "auth/invalid-api-key":
+                return "Firebase configuration error. Please contact the website administrator.";
+
+            default:
+                return "Account creation failed. Please try again.";
+        }
+    };
+
+    // =====================================
+    // HANDLE SIGNUP
+    // =====================================
+
+    const handleSignUp = async (e) => {
         e.preventDefault();
 
+        if (isSubmitting) {
+            return;
+        }
+
         const form = e.target;
-        const email = form.email.value;
+
+        const email = form.email.value.trim();
         const password = form.password.value;
-        const confirmpassword = form.confirmpassword.value;
+        const confirmPassword = form.confirmpassword.value;
+        const acceptedTerms = form.terms.checked;
 
-        const userInfo = { email, password };
-        console.log(userInfo);
+        // Email validation
 
-
-
-        if(email === "" ){
-            toast.warning("Email is Required",{
+        if (!email) {
+            toast.warning("Email is required.", {
                 position: "top-center"
             });
+
             return;
         }
 
-        else if(password === "" ){
-            toast.warning("Password is Required",{
+        // Password validation
+
+        if (!password) {
+            toast.warning("Password is required.", {
                 position: "top-center"
             });
+
             return;
         }
 
-        else if(password != confirmpassword ){
-            toast.error("Password is not matched",{
+        // Confirm password validation
+
+        if (password !== confirmPassword) {
+            toast.error("Passwords do not match.", {
                 position: "top-center"
             });
+
             return;
         }
 
-        else if(password.length < 6){
-            toast.error("Password Should be at least 6 character or more logner than that",{
-                position: "top-center"
+        // Minimum password length
+
+        if (password.length < 8) {
+            toast.error(
+                "Password must be at least 8 characters long.",
+                {
+                    position: "top-center"
+                }
+            );
+
+            return;
+        }
+
+        // Password complexity validation
+
+        const passwordRegex =
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
+
+        if (!passwordRegex.test(password)) {
+            toast.error(
+                "Password must contain uppercase, lowercase, a number, and a special character.",
+                {
+                    position: "top-center",
+                    autoClose: 4000
+                }
+            );
+
+            return;
+        }
+
+        // Terms and conditions validation
+
+        if (!acceptedTerms) {
+            toast.warning(
+                "Please accept the Terms & Conditions.",
+                {
+                    position: "top-center"
+                }
+            );
+
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            // =====================================
+            // CREATE FIREBASE USER
+            // =====================================
+
+            console.log("Starting email signup...");
+
+            const result = await createUser(email, password);
+
+            console.log(
+                "Firebase signup successful:",
+                result.user.email
+            );
+
+            // =====================================
+            // SAVE USER EMAIL TO MONGODB
+            // =====================================
+
+            const response = await axiosPublic.post("/users", {
+                email: result.user.email
             });
-            return;
-        }
 
+            // =====================================
+            // SUCCESS MESSAGE
+            // =====================================
 
-        else if(!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password)){
-            toast.error("Your password should contain with uppercae,lowercase,num and speical character.",{
-                position: "top-center"
-            })
-            return;
-        }
-        
+            if (response.data.insertedId) {
+                toast.success("Account Created Successfully!", {
+                    position: "top-center",
+                    autoClose: 1500,
+                    onClose: () => navigate("/")
+                });
+            } else {
+                // Firebase account was created, but MongoDB
+                // did not confirm a new user insertion.
 
-
-
-
-
-
-        createUser(email, password)
-
-
-            .then(() =>{
-                axiosPublic.post('/users', userInfo)
-                .then((res) =>{
-                    if(res.data.insertedId){
-                        console.log("User Added to databse");
-                        toast.success("Account Created Successfully", {
-                            position: "top-center",
-                            autoClose: 1000,
-                            onclose: () => navigate('/')
-                        })
+                toast.info(
+                    "Your Firebase account was created, but we could not confirm saving your user information. Please contact support if needed.",
+                    {
+                        position: "top-center",
+                        autoClose: 5000
                     }
-                })
-            })
+                );
+            }
+        } catch (error) {
+            console.error("Signup error code:", error.code);
+            console.error("Signup error message:", error.message);
 
-    }
+            // Firebase Authentication error
 
-    
+            if (error.code?.startsWith("auth/")) {
+                toast.error(getSignupErrorMessage(error), {
+                    position: "top-center",
+                    autoClose: 4000
+                });
+            } else {
+                // MongoDB/API error or another unexpected error
 
+                toast.error(
+                    "Something went wrong while saving your account information. Please check your connection and try again.",
+                    {
+                        position: "top-center",
+                        autoClose: 4000
+                    }
+                );
+            }
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
-
-
+    // =====================================
+    // SIGNUP PAGE UI
+    // =====================================
 
     return (
         <>
             <Helmet>
-                <title>Shopery | Sign Up </title>
-                {/* <link rel="canonical" href="https://www.tacobell.com/" /> */}
+                <title>Shopery | Sign Up</title>
             </Helmet>
-            <div className="flex justify-center items-center h-screen bg-[#fff] nunito_sans">
-                <ToastContainer/>
 
-                <div className="bg-white p-8 mx-3 lg:mx-auto shadow-lg rounded-lg border-2 w-full lg:w-4/12 ">
-                    <h2 className="text-2xl font-bold mb-4 text-gray-800 text-center">Create Account</h2>
-                    <form onSubmit={handleSignUp} className="space-y-4">
+            <div className="flex min-h-screen items-center justify-center bg-[#fff] nunito_sans py-10">
+                <ToastContainer />
+
+                <div className="mx-3 w-full rounded-lg border-2 bg-white p-8 shadow-lg lg:mx-auto lg:w-4/12">
+
+                    {/* PAGE TITLE */}
+
+                    <h2 className="mb-6 text-center text-2xl font-bold text-gray-800">
+                        Create Account
+                    </h2>
+
+                    {/* SIGNUP FORM */}
+
+                    <form
+                        onSubmit={handleSignUp}
+                        className="space-y-4"
+                    >
+                        {/* EMAIL */}
 
                         <div className="form-group">
-                            {/* <label htmlFor="email" className="block text-gray-600">Email</label> */}
-                            <input type="email" id="email" placeholder='Email' name="email" className="w-full px-4 py-[14px] border focus:outline-none focus:border-[#00B307] rounded mt-1" required />
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                placeholder="Email"
+                                autoComplete="email"
+                                className="mt-1 w-full rounded border px-4 py-[14px] focus:border-[#00B307] focus:outline-none"
+                                required
+                            />
                         </div>
+
+                        {/* PASSWORD */}
 
                         <div className="form-group relative">
-                            {/* <label htmlFor="password" className="block text-gray-600">Password</label> */}
-                            <input type={showPassword ? "text" : "password"}  placeholder='Password' name="password" className="w-full px-4 py-[14px] border focus:outline-none focus:border-[#00B307] rounded" required />
-                            <div className="absolute inset-y-0 right-0 pr-3 top-0 flex items-center text-sm leading-5 cursor-pointer" onClick={togglePasswordVisibility} >
-                                {showPassword ? <FaEyeSlash /> : <FaEye />}
-                            </div>
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                id="password"
+                                name="password"
+                                placeholder="Password"
+                                autoComplete="new-password"
+                                className="w-full rounded border px-4 py-[14px] pr-12 focus:border-[#00B307] focus:outline-none"
+                                required
+                            />
+
+                            <button
+                                type="button"
+                                onClick={togglePasswordVisibility}
+                                aria-label={
+                                    showPassword
+                                        ? "Hide password"
+                                        : "Show password"
+                                }
+                                className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-600"
+                            >
+                                {showPassword ? (
+                                    <FaEyeSlash />
+                                ) : (
+                                    <FaEye />
+                                )}
+                            </button>
                         </div>
 
+                        {/* CONFIRM PASSWORD */}
 
                         <div className="form-group relative">
-                            {/* <label htmlFor="password" className="block text-gray-600">Password</label> */}
-                            <input type={showConfirmPassword ? "text" : "password"}  placeholder='Confirm Password' name="confirmpassword" className="w-full px-4 py-[14px] border focus:outline-none focus:border-[#00B307] rounded mt-1" required />
-                            <div className="absolute inset-y-0 right-0 pr-3 top-0 flex items-center text-sm leading-5 cursor-pointer" onClick={toggleConfirmPasswordVisibility} >
-                                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-                            </div>
+                            <input
+                                type={
+                                    showConfirmPassword
+                                        ? "text"
+                                        : "password"
+                                }
+                                id="confirmpassword"
+                                name="confirmpassword"
+                                placeholder="Confirm Password"
+                                autoComplete="new-password"
+                                className="mt-1 w-full rounded border px-4 py-[14px] pr-12 focus:border-[#00B307] focus:outline-none"
+                                required
+                            />
+
+                            <button
+                                type="button"
+                                onClick={toggleConfirmPasswordVisibility}
+                                aria-label={
+                                    showConfirmPassword
+                                        ? "Hide confirm password"
+                                        : "Show confirm password"
+                                }
+                                className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-600"
+                            >
+                                {showConfirmPassword ? (
+                                    <FaEyeSlash />
+                                ) : (
+                                    <FaEye />
+                                )}
+                            </button>
                         </div>
 
+                        {/* PASSWORD REQUIREMENTS */}
 
-                        <div className="flex items-center">
-                            <input type="checkbox" className="mr-2"/>
-                            <label htmlFor="shipToDifferentAddress">Accept all terms & Conditions</label>
+                        <p className="text-xs leading-5 text-gray-500">
+                            Password must contain at least 8 characters,
+                            including uppercase and lowercase letters,
+                            a number, and a special character.
+                        </p>
+
+                        {/* TERMS AND CONDITIONS */}
+
+                        <div className="flex items-start gap-2">
+                            <input
+                                type="checkbox"
+                                id="terms"
+                                name="terms"
+                                className="mt-1 accent-[#00B307]"
+                            />
+
+                            <label
+                                htmlFor="terms"
+                                className="text-sm text-gray-600"
+                            >
+                                I accept all{" "}
+                                <Link
+                                    to="/terms"
+                                    className="font-semibold text-[#00B307] hover:underline"
+                                >
+                                    Terms & Conditions
+                                </Link>
+                            </label>
                         </div>
 
-                        <button type="submit" className="w-full bg-[#00B307] text-white py-[10px] text-[18px] rounded-[30px] ">Create Account</button>
+                        {/* CREATE ACCOUNT BUTTON */}
+
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="w-full rounded-[30px] bg-[#00B307] py-[10px] text-[18px] text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            {isSubmitting
+                                ? "Creating Account..."
+                                : "Create Account"}
+                        </button>
                     </form>
-                    <h3 className='text-center text-[17px] text-[#333] my-4'>Sign in With</h3>
+
+                    {/* SOCIAL LOGIN */}
+
+                    <h3 className="my-4 text-center text-[17px] text-[#333]">
+                        Sign in With
+                    </h3>
+
                     <Sociallogin />
-                    <p className="mt-4 text-gray-600 text-center">Already have an account? <Link to="/login" className="text-[#00B307] font-bold hover:underline">Login</Link></p>
+
+                    {/* LOGIN LINK */}
+
+                    <p className="mt-4 text-center text-gray-600">
+                        Already have an account?{" "}
+                        <Link
+                            to="/login"
+                            className="font-bold text-[#00B307] hover:underline"
+                        >
+                            Login
+                        </Link>
+                    </p>
                 </div>
-
-
-                
-
             </div>
 
-            <Newsletter/>
+            {/* NEWSLETTER */}
+
+            <Newsletter />
         </>
     );
 };

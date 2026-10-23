@@ -16,9 +16,6 @@ import Follow from "./Follow/Follow";
 
 import { Helmet } from 'react-helmet-async';
 
-
-import AOS from 'aos';
-import 'aos/dist/aos.css';
 import { useEffect } from "react";
 
 
@@ -27,9 +24,7 @@ import { useEffect } from "react";
 
 const Home = () => {
 
-    useEffect(() => {
-        AOS.init();
-    }, []);
+    
 
     return (
         <section>
@@ -40,8 +35,7 @@ const Home = () => {
             <Banner/>
 
             <div className="px-4 lg:px-6 py-10 nunito_sans"
-            data-aos="fade-up"
-            data-aos-anchor-placement="bottom-bottom"
+            
             >
                 <div className="grid grid-cols-1 gap-10 lg:gap-4 lg:grid-cols-4 rounded-lg  bg-[#fff] shadow-lg p-5 lg:p-6">
 

@@ -1,179 +1,194 @@
 
-import React from "react";
-import { FaChartPie, FaCheckCircle, FaClock, FaTimesCircle } from "react-icons/fa";
-//import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import {
+    ResponsiveContainer,
+    PieChart,
+    Pie,
+    Cell,
+    Tooltip,
+} from "recharts";
 
-//import { FaClock, FaCheckCircle, FaTimesCircle, FaChartPie } from "react-icons/fa";
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import {
+    FaClock,
+    FaCheckCircle,
+    FaBoxOpen,
+    FaTimesCircle,
+} from "react-icons/fa";
 
-const OrderStatusChart = ({ stats }) => {
-    const orderData = [
-        {
-            name: "Pending",
-            value: stats?.pendingOrders ?? 0,
-            color: "#F59E0B",
-            icon: FaClock,
-            description: "Waiting for processing"
-        },
-        {
-            name: "Delivered",
-            value: stats?.deliveredOrders ?? 0,
-            color: "#10B981",
-            icon: FaCheckCircle,
-            description: "Successfully delivered"
-        },
-        {
-            name: "Cancelled",
-            value: stats?.cancelledOrders ?? 0,
-            color: "#EF4444",
-            icon: FaTimesCircle,
-            description: "Cancelled orders"
-        }
-    ];
+const STATUS_CONFIG = [
+    {
+        key: "pending",
+        name: "Pending",
+        color: "#F59E0B",
+        icon: FaClock,
+    },
+    {
+        key: "confirmed",
+        name: "Confirmed",
+        color: "#3B82F6",
+        icon: FaCheckCircle,
+    },
+    {
+        key: "delivered",
+        name: "Delivered",
+        color: "#10B981",
+        icon: FaBoxOpen,
+    },
+    {
+        key: "cancelled",
+        name: "Cancelled",
+        color: "#EF4444",
+        icon: FaTimesCircle,
+    },
+];
 
-    const totalOrders = orderData.reduce(
-        (total, item) => total + item.value,
-        0
-    );
+const OrderStatusChart = ({ stats = {} }) => {
+    const pending = Number(stats.pendingOrders) || 0;
+    const confirmed = Number(stats.confirmedOrders) || 0;
+    const delivered = Number(stats.deliveredOrders) || 0;
+    const cancelled = Number(stats.cancelledOrders) || 0;
 
-    const hasOrders = totalOrders > 0;
+    const statusValues = {
+        pending,
+        confirmed,
+        delivered,
+        cancelled,
+    };
 
-    const chartData = hasOrders
-        ? orderData.filter((item) => item.value > 0)
-        : [{ name: "No Orders", value: 1, color: "#E5E7EB" }];
+    const totalOrders =
+        Number(stats.totalOrders) ||
+        pending + confirmed + delivered + cancelled;
+
+    const chartData = STATUS_CONFIG.map((item) => ({
+        ...item,
+        value: statusValues[item.key],
+    }));
 
     return (
-        <div className="h-full rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-shadow duration-300 hover:shadow-md sm:p-6">
+        <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md sm:p-6">
 
-            {/* Header */}
-            <div className="mb-5 flex items-center justify-between">
+            <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
                 <div>
-                    <h2 className="text-lg font-bold text-gray-800 sm:text-xl">
-                        Order Status
+                    <h2 className="text-lg font-bold text-gray-800">
+                        Order Status Overview
                     </h2>
 
                     <p className="mt-1 text-sm text-gray-500">
-                        Track your order performance
+                        Track the current status of your orders.
                     </p>
                 </div>
 
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50">
-                    <FaChartPie className="text-xl text-emerald-600" />
-                </div>
+                <span className="w-fit rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
+                    {totalOrders} Total Orders
+                </span>
             </div>
 
-            {/* Chart */}
-            <div className="relative h-64 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                        <Pie
-                            data={chartData}
-                            dataKey="value"
-                            nameKey="name"
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={70}
-                            outerRadius={95}
-                            paddingAngle={hasOrders ? 4 : 0}
-                            startAngle={90}
-                            endAngle={-270}
-                            stroke="none"
-                        >
-                            {chartData.map((entry, index) => (
-                                <Cell
-                                    key={`cell-${index}`}
-                                    fill={entry.color}
-                                />
-                            ))}
-                        </Pie>
+            <div className="mt-4 grid grid-cols-1 items-center gap-5 md:grid-cols-2">
 
-                        {hasOrders && (
-                            <Tooltip
-                                formatter={(value, name) => [
-                                    `${value} ${Number(value) === 1 ? "order" : "orders"}`,
-                                    name
-                                ]}
-                                contentStyle={{
-                                    borderRadius: "12px",
-                                    border: "1px solid #E5E7EB",
-                                    boxShadow: "0 4px 12px rgba(0,0,0,0.08)"
-                                }}
-                            />
-                        )}
-                    </PieChart>
-                </ResponsiveContainer>
+                {/* Doughnut Chart */}
+                <div className="relative h-64">
+                    {totalOrders > 0 ? (
+                        <>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={chartData.filter(
+                                            (item) => item.value > 0
+                                        )}
+                                        dataKey="value"
+                                        nameKey="name"
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={65}
+                                        outerRadius={95}
+                                        paddingAngle={4}
+                                        stroke="none"
+                                    >
+                                        {chartData
+                                            .filter(
+                                                (item) => item.value > 0
+                                            )
+                                            .map((item) => (
+                                                <Cell
+                                                    key={item.key}
+                                                    fill={item.color}
+                                                />
+                                            ))}
+                                    </Pie>
 
-                {/* Center Text */}
-                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-bold text-gray-800">
-                        {totalOrders}
-                    </span>
+                                    <Tooltip
+                                        formatter={(value, name) => [
+                                            `${value} orders`,
+                                            name,
+                                        ]}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
 
-                    <span className="mt-1 text-xs font-medium text-gray-500">
-                        Total Orders
-                    </span>
+                            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                                <span className="text-3xl font-bold text-gray-800">
+                                    {totalOrders}
+                                </span>
+
+                                <span className="text-xs text-gray-500">
+                                    Total Orders
+                                </span>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="flex h-full items-center justify-center text-sm text-gray-400">
+                            No orders available
+                        </div>
+                    )}
                 </div>
-            </div>
 
-            {/* Order Status Details */}
-            <div className="mt-5 space-y-4">
-                {orderData.map((item) => {
-                    const Icon = item.icon;
+                {/* Status Legend */}
+                <div className="space-y-5">
+                    {chartData.map((item) => {
+                        const Icon = item.icon;
 
-                    const percentage = totalOrders > 0
-                        ? ((item.value / totalOrders) * 100).toFixed(1)
-                        : "0.0";
+                        const percentage =
+                            totalOrders > 0
+                                ? (item.value / totalOrders) * 100
+                                : 0;
 
-                    return (
-                        <div
-                            key={item.name}
-                            className="flex items-center justify-between gap-3"
-                        >
-                            <div className="flex min-w-0 items-center gap-3">
-                                <div
-                                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                                    style={{
-                                        backgroundColor: `${item.color}15`
-                                    }}
-                                >
-                                    <Icon
-                                        style={{ color: item.color }}
-                                        className="text-lg"
+                        return (
+                            <div key={item.key}>
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2">
+                                        <span
+                                            className="rounded-lg p-2"
+                                            style={{
+                                                backgroundColor: `${item.color}18`,
+                                                color: item.color,
+                                            }}
+                                        >
+                                            <Icon />
+                                        </span>
+
+                                        <span className="text-sm font-medium text-gray-600">
+                                            {item.name}
+                                        </span>
+                                    </div>
+
+                                    <span className="font-bold text-gray-800">
+                                        {item.value}
+                                    </span>
+                                </div>
+
+                                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-100">
+                                    <div
+                                        className="h-full rounded-full transition-all duration-500"
+                                        style={{
+                                            width: `${percentage}%`,
+                                            backgroundColor: item.color,
+                                        }}
                                     />
                                 </div>
-
-                                <div className="min-w-0">
-                                    <p className="text-sm font-semibold text-gray-700">
-                                        {item.name}
-                                    </p>
-
-                                    <p className="text-xs text-gray-400">
-                                        {item.description}
-                                    </p>
-                                </div>
                             </div>
+                        );
+                    })}
+                </div>
 
-                            <div className="shrink-0 text-right">
-                                <p className="text-sm font-bold text-gray-800">
-                                    {item.value}
-                                </p>
-
-                                <p className="text-xs text-gray-400">
-                                    {percentage}%
-                                </p>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* Footer */}
-            <div className="mt-6 rounded-xl bg-gray-50 px-4 py-3">
-                <p className="text-center text-xs text-gray-500">
-                    {hasOrders
-                        ? `Showing status breakdown for ${totalOrders} ${totalOrders === 1 ? "order" : "orders"}`
-                        : "No orders available yet"}
-                </p>
             </div>
         </div>
     );

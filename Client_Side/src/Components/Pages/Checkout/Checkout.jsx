@@ -1,551 +1,864 @@
-import { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { HiOutlineHome } from 'react-icons/hi';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import useAuth from '../../Hooks/useAuth';
-import useAxiosPublic from '../../Hooks/useAxiosPublic';
-import useCart from '../../Hooks/useCart';
-//mport OrderHistory from "../Pages/UserDashboard/OrderHistory/OrderHistory";
-import OrderHistory from '../../UserDashboard/OrderHistory/OrderHistory'
+
+import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
+import { HiOutlineHome } from "react-icons/hi";
+import {
+    FaArrowRight,
+    FaMobileAlt,
+    FaMoneyBillWave,
+} from "react-icons/fa";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+import useAuth from "../../Hooks/useAuth";
+import useCart from "../../Hooks/useCart";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
+
+const ONLINE_PAYMENT_METHODS = [
+    {
+        value: "bkash",
+        label: "bKash",
+        color: "#D12053",
+        background: "#FCE7EF",
+    },
+    {
+        value: "nagad",
+        label: "Nagad",
+        color: "#F15A24",
+        background: "#FFF0E8",
+    },
+    {
+        value: "rocket",
+        label: "Rocket",
+        color: "#8B2F8F",
+        background: "#F6E8F7",
+    },
+    {
+        value: "upay",
+        label: "Upay",
+        color: "#009B70",
+        background: "#E4F7F0",
+    },
+];
+
+const EMPTY_BILLING_INFO = {
+    firstname: "",
+    lastname: "",
+    companyname: "",
+    streetaddress: "",
+    division: "",
+    district: "",
+    zipcode: "",
+    phonenumber: "",
+};
 
 const Checkout = () => {
     const location = useLocation();
-    const axiosPublic = useAxiosPublic();
-    const [cart, setCart, refetch] = useCart();
     const navigate = useNavigate();
+
+    const axiosSecure = useAxiosSecure();
+    const [cart, setCart, refetch] = useCart();
     const { user } = useAuth();
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const email = user?.email;
-    const { quantities = {}, totalPrice = 0 } = location.state || {};
+    const quantities = location.state?.quantities || {};
 
-    const handlePlaceOrder = async (e) => {
-        e.preventDefault();
-        if (isSubmitting || !email || !cart?.length) return;
+    const [billingInfo, setBillingInfo] = useState({
+        ...EMPTY_BILLING_INFO,
+    });
+    const [isBillingLoading, setIsBillingLoading] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState("cash");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-        const form = e.currentTarget;
-        const firstname = form.firstname.value;
-        const lastname = form.lastname.value;
-        const name = `${firstname} ${lastname}`;
-        const companyname = form.companyname.value;
-        const streetaddress = form.streetaddress.value;
-        const division = form.division.value;
-        const district = form.district.value;
-        const zipcode = form.zipcode.value;
-        const phonenumber = form.phonenumber.value;
-        const ordernotes = form.ordernotes.value;
-        const paymentMethod = form.paymentMethod.value;
+    // Calculate the cart total using the selected quantities.
+    const cartTotal = (cart || []).reduce((sum, item) => {
+        const quantity = Number(quantities[item._id] ?? 1);
+        const price = Number(item.price);
+
+        if (
+            !Number.isInteger(quantity) ||
+            quantity < 1 ||
+            !Number.isFinite(price) ||
+            price < 0
+        ) {
+            return sum;
+        }
+
+        return sum + price * quantity;
+    }, 0);
+
+    const totalPrice =
+        Number(location.state?.totalPrice) > 0
+            ? Number(location.state.totalPrice)
+            : cartTotal;
+
+    const formatMoney = (value) =>
+        Number(value || 0).toLocaleString("en-BD", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+
+    // Fetch the logged-in user's saved billing address.
+    useEffect(() => {
+        if (!email) {
+            setBillingInfo({ ...EMPTY_BILLING_INFO });
+            setIsBillingLoading(false);
+            return;
+        }
+
+        let isMounted = true;
+
+        const fetchBillingAddress = async () => {
+            setIsBillingLoading(true);
+
+            try {
+                const response = await axiosSecure.get(
+                    `/billings?email=${encodeURIComponent(email)}`
+                );
+
+                if (!isMounted) return;
+
+                const billingRecords = Array.isArray(response.data)
+                    ? response.data
+                    : Array.isArray(response.data?.billings)
+                      ? response.data.billings
+                      : response.data &&
+                          typeof response.data === "object"
+                        ? [response.data]
+                        : [];
+
+                if (billingRecords.length === 0) {
+                    setBillingInfo({ ...EMPTY_BILLING_INFO });
+                    return;
+                }
+
+                // The backend should return the newest record first.
+                const savedBilling = billingRecords[0];
+
+                const nameParts = String(
+                    savedBilling.fullname || ""
+                )
+                    .trim()
+                    .split(/\s+/)
+                    .filter(Boolean);
+
+                const firstname = nameParts.shift() || "";
+                const lastname = nameParts.join(" ");
+
+                setBillingInfo({
+                    firstname,
+                    lastname,
+                    companyname: savedBilling.companyname || "",
+                    streetaddress: savedBilling.streetaddress || "",
+                    division: savedBilling.division || "",
+                    district: savedBilling.district || "",
+                    zipcode: savedBilling.zipcode || "",
+                    phonenumber: savedBilling.phone || "",
+                });
+            } catch (error) {
+                console.error(
+                    "Failed to fetch billing address:",
+                    error
+                );
+
+                if (isMounted) {
+                    toast.error(
+                        "Could not load your saved billing address. Please enter it manually."
+                    );
+                }
+            } finally {
+                if (isMounted) {
+                    setIsBillingLoading(false);
+                }
+            }
+        };
+
+        fetchBillingAddress();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [email, axiosSecure]);
+
+    const handleBillingChange = (event) => {
+        const { name, value } = event.target;
+
+        setBillingInfo((previous) => ({
+            ...previous,
+            [name]: value,
+        }));
+    };
+
+    const handlePlaceOrder = async (event) => {
+        event.preventDefault();
+
+        if (isSubmitting) return;
+
+        if (!email) {
+            toast.error("Please log in before placing your order.");
+            return;
+        }
+
+        if (!Array.isArray(cart) || cart.length === 0) {
+            toast.error("Your cart is empty.");
+            return;
+        }
+
+        const form = event.currentTarget;
+
+        const firstname = billingInfo.firstname.trim();
+        const lastname = billingInfo.lastname.trim();
+        const streetaddress = billingInfo.streetaddress.trim();
+        const division = billingInfo.division;
+        const district = billingInfo.district.trim();
+        const phonenumber = billingInfo.phonenumber.trim();
+
+        if (
+            !firstname ||
+            !lastname ||
+            !streetaddress ||
+            !division ||
+            !district ||
+            !phonenumber
+        ) {
+            toast.error(
+                "Please complete all required billing fields."
+            );
+            return;
+        }
+
+        /*
+         * IMPORTANT:
+         * item._id is the cart document ID.
+         * item.cartId stores the original product ID in SeeProduct.jsx.
+         * The backend needs the actual product ID to find the product.
+         */
+        const products = cart.map((item) => {
+            const quantity = Number(quantities[item._id] ?? 1);
+            const price = Number(item.price);
+
+            return {
+                productId: item.cartId,
+                productName: item.product,
+                quantity,
+                price,
+                image: item.image || "",
+                total: price * quantity,
+            };
+        });
+
+        // Validate the product IDs and order quantities.
+        const invalidProduct = products.some(
+            (item) =>
+                typeof item.productId !== "string" ||
+                !/^[a-fA-F0-9]{24}$/.test(item.productId) ||
+                !Number.isFinite(item.price) ||
+                item.price < 0 ||
+                !Number.isInteger(item.quantity) ||
+                item.quantity < 1 ||
+                !Number.isFinite(item.total)
+        );
+
+        if (invalidProduct) {
+            console.error(
+                "Invalid checkout products:",
+                products
+            );
+
+            toast.error(
+                "Some cart items contain invalid product information. Please refresh your cart and try again."
+            );
+            return;
+        }
+
+        // Always calculate the order total from the cart items.
+        const calculatedTotal = products.reduce(
+            (sum, item) => sum + item.total,
+            0
+        );
+
+        if (!Number.isFinite(calculatedTotal) || calculatedTotal <= 0) {
+            toast.error(
+                "Your order total must be greater than zero."
+            );
+            return;
+        }
+
+        if (
+            !["cash", ...ONLINE_PAYMENT_METHODS.map(
+                (method) => method.value
+            )].includes(paymentMethod)
+        ) {
+            toast.error("Please select a valid payment method.");
+            return;
+        }
+
+        const orderNotes = form.elements.ordernotes?.value?.trim() || "";
 
         const orderData = {
-            email, name, companyname, streetaddress, division, district,
-            zipcode, phonenumber, ordernotes, paymentMethod,
-            cart: cart.map(item => ({
-                productId: item._id,
-                productName: item.product,
-                quantity: quantities[item._id] ?? 1,
-                price: item.price,
-                image: item.image,
-                total: Number(item.price) * (quantities[item._id] ?? 1)
-            })),
-            totalPrice,
-            status: 'pending'
+            email,
+            name: `${firstname} ${lastname}`,
+            companyname: billingInfo.companyname.trim(),
+            streetaddress,
+            division,
+            district,
+            zipcode: billingInfo.zipcode.trim(),
+            phonenumber,
+            ordernotes: orderNotes,
+            paymentMethod,
+            cart: products,
+            totalPrice: calculatedTotal,
+            status: "pending",
         };
 
         setIsSubmitting(true);
-        let orderSaved = false;
+
         try {
-            const response = await axiosPublic.post('/orders', orderData);
-            if (response.status !== 201 || !response.data?.insertedId) {
-                throw new Error('Order was not confirmed by the server');
-            }
-            orderSaved = true;
+            if (paymentMethod === "cash") {
+                const response = await axiosSecure.post(
+                    "/orders",
+                    orderData
+                );
 
-            // Delete only after the order has been saved successfully.
-            // If deletion fails, don't submit the order again.
-            try {
-                await axiosPublic.delete(`/carts?email=${encodeURIComponent(email)}`);
-                if (typeof setCart === 'function') setCart([]);
-                if (typeof refetch === 'function') await refetch();
-            } catch (cartError) {
-                console.error('Order saved, but cart cleanup failed:', cartError);
-                toast.warn('Order saved, but cart could not be cleared.', {
-                    position: 'top-center', autoClose: 2500
-                });
+                if (
+                    response.status !== 201 ||
+                    !response.data?.insertedId
+                ) {
+                    throw new Error(
+                        "The order could not be confirmed."
+                    );
+                }
+
+                // The order is saved, so attempt to clear the user's cart.
+                try {
+                    await axiosSecure.delete(
+                        `/carts?email=${encodeURIComponent(email)}`
+                    );
+
+                    setCart([]);
+                    await refetch();
+                } catch (error) {
+                    console.error(
+                        "Cart cleanup failed:",
+                        error
+                    );
+
+                    toast.warning(
+                        "Your order was saved, but your cart could not be cleared."
+                    );
+                }
+
+                toast.success(
+                    "Cash on Delivery order placed successfully!"
+                );
+
+                setTimeout(() => {
+                    navigate("/userdashboard/orderhistory");
+                }, 1000);
+
+                return;
             }
 
-            toast.success('Order placed successfully!', {
-                position: 'top-center', autoClose: 1800
+            const selectedMethod = ONLINE_PAYMENT_METHODS.find(
+                (method) => method.value === paymentMethod
+            );
+
+            if (!selectedMethod) {
+                throw new Error(
+                    "Please select a valid payment method."
+                );
+            }
+
+            // Continue to the existing demo-payment page.
+            navigate("/demo-payment", {
+                state: {
+                    paymentMethod,
+                    totalPrice: calculatedTotal,
+                    orderData,
+                },
             });
-            form.reset();
-            setTimeout(() => navigate('/userdashboard/orderhistory'), 2200); // Change to your actual orders route
         } catch (error) {
-            console.error('Checkout error:', error);
-            if (!orderSaved) {
-                toast.error('Order placement failed. Please try again.', {
-                    position: 'top-center', autoClose: 3000
-                });
-            }
+            console.error("Checkout error:", error);
+
+            toast.error(
+                error?.response?.data?.message ||
+                    error.message ||
+                    "Unable to process your order."
+            );
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    if (!email) return <div>Loading...</div>;
-
     return (
-
-        <section className="nunito_sans">
-
+        <section className="nunito_sans min-h-screen bg-gray-50">
             <Helmet>
-
-                <title>Shopery | Checkout </title>
-
+                <title>Shopery | Checkout</title>
             </Helmet>
 
-            <ToastContainer />
+            <ToastContainer
+                position="top-center"
+                autoClose={2500}
+            />
 
-            <div className="specific_product_banner h-full lg:h-[30vh] mb-2">
-
-                <div className="text-[17px] text-white breadcrumbs px-12 py-10 mb-5">
-
+            <div className="specific_product_banner mb-2 h-full lg:h-[30vh]">
+                <div className="breadcrumbs mb-5 px-5 py-10 text-[17px] text-white lg:px-12">
                     <ul>
+                        <li>
+                            <Link
+                                to="/"
+                                className="flex items-center gap-1"
+                            >
+                                <HiOutlineHome />
+                                Home
+                            </Link>
+                        </li>
 
-                        <li><Link to="/" className="flex items-center gap-1"><HiOutlineHome />Home</Link></li>
+                        <li>
+                            <Link to="/cart">
+                                Shopping Cart
+                            </Link>
+                        </li>
 
-                        <li><Link to="/cart" className="flex items-center gap-1">Shopping Cart</Link></li>
-
-                        <li className="text-[#00B207] font-bold">Checkout</li>
-
+                        <li className="font-bold text-[#00B207]">
+                            Checkout
+                        </li>
                     </ul>
-
                 </div>
-
             </div>
 
+            <div className="px-4 py-10 lg:px-14">
+                <form
+                    onSubmit={handlePlaceOrder}
+                    className="grid grid-cols-1 gap-6 lg:grid-cols-3"
+                >
+                    {/* Billing Information */}
+                    <div className="lg:col-span-2">
+                        <div className="rounded-xl border bg-white p-5 shadow-sm md:p-8">
+                            <h2 className="mb-3 text-2xl font-bold">
+                                Billing Information
+                            </h2>
 
+                            {isBillingLoading && (
+                                <p className="mb-5 text-sm text-gray-500">
+                                    Loading your saved billing address...
+                                </p>
+                            )}
 
-            <div className="px-5 lg:px-14 py-10">
+                            {!isBillingLoading && email && (
+                                <p className="mb-5 text-sm text-gray-500">
+                                    Your saved billing information is
+                                    loaded automatically when available.
+                                </p>
+                            )}
 
-                <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8">
-
-                    <div className="h-auto lg:col-span-2">
-
-                        <div className="bg-white p-8 rounded-[2px] border shadow-sm">
-
-                            <h2 className="text-[26px] font-bold mb-6">Billing Information</h2>
-
-                            <div className="space-y-4">
-
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-
-                                    <div>
-
-                                        <h3 className="text-[#222] font-[600] text-[18px] mb-[4px]">First Name</h3>
-
-                                        <input type="text" placeholder="First name" name="firstname" className="w-full border focus:outline-none px-4 py-3 rounded-[6px]" />
-
-                                    </div>
-
-                                    <div>
-
-                                        <h3 className="text-[#222] font-[600] text-[18px] mb-[4px]">Last Name</h3>
-
-                                        <input type="text" placeholder="Last name" name="lastname" className="w-full border focus:outline-none px-4 py-3 rounded-[6px]" />
-
-                                    </div>
-
-                                    <div>
-
-                                        <h3 className="text-[#222] font-[600] text-[18px] mb-[4px]">Company Name (Optional)</h3>
-
-                                        <input type="text" placeholder="Company Name (optional)" name="companyname" className="w-full border focus:outline-none px-4 py-3 rounded-[6px]" />
-
-                                    </div>
-
-                                </div>
-
-
-
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                {/* First Name */}
                                 <div>
+                                    <label
+                                        htmlFor="firstname"
+                                        className="mb-2 block font-semibold"
+                                    >
+                                        First Name *
+                                    </label>
 
-                                    <h3 className="text-[#222] font-[600] text-[18px] mb-[4px]">Street Address</h3>
-
-                                    <input type="text" placeholder="Street Address" name="streetaddress" className="w-full border focus:outline-none px-4 py-3 rounded-[6px]" />
-
+                                    <input
+                                        id="firstname"
+                                        name="firstname"
+                                        autoComplete="given-name"
+                                        required
+                                        value={billingInfo.firstname}
+                                        onChange={handleBillingChange}
+                                        className="w-full rounded-lg border px-4 py-3"
+                                        placeholder="First name"
+                                    />
                                 </div>
 
-
-
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-4">
-
-                                    <div>
-
-                                        <h3 className="text-[#222] font-[600] text-[18px] mb-[4px]">Division</h3>
-
-                                        <select name="division" defaultValue="Select Division" className="w-full border focus:outline-none px-4 py-3 rounded-[6px]">
-
-                                            <option disabled>Select Division</option>
-
-                                            <option value="Barisal">Barisal</option>
-
-                                            <option value="Chattogram">Chattogram</option>
-
-                                            <option value="Dhaka">Dhaka</option>
-
-                                            <option value="Khulna">Khulna</option>
-
-                                            <option value="Mymensingh">Mymensingh</option>
-
-                                            <option value="Rajshahi">Rajshahi</option>
-
-                                            <option value="Rangpur">Rangpur</option>
-
-                                            <option value="Sylhet">Sylhet</option>
-
-                                        </select>
-
-                                    </div>
-
-
-
-                                    <div>
-
-                                        <h3 className="text-[#222] font-[600] text-[18px] mb-[4px]">District</h3>
-
-                                        <select name="district" defaultValue="Select District" className="w-full border focus:outline-none px-4 py-3 rounded-[6px]">
-
-                                            <option disabled>Select District</option>
-
-                                            <option value="Bagerhat">Bagerhat</option>
-
-                                            <option value="Bandarban">Bandarban</option>
-
-                                            <option value="Barguna">Barguna</option>
-
-                                            <option value="Barishal">Barishal</option>
-
-                                            <option value="Bhola">Bhola</option>
-
-                                            <option value="Bogra">Bogra</option>
-
-                                            <option value="Brahmanbaria">Brahmanbaria</option>
-
-                                            <option value="Chandpur">Chandpur</option>
-
-                                            <option value="Chapainawabganj">Chapainawabganj</option>
-
-                                            <option value="Chattogram">Chattogram</option>
-
-                                            <option value="Chuadanga">Chuadanga</option>
-
-                                            <option value="Comilla">Comilla</option>
-
-                                            <option value="Cox's Bazar">Cox's Bazar</option>
-
-                                            <option value="Dhaka">Dhaka</option>
-
-                                            <option value="Dinajpur">Dinajpur</option>
-
-                                            <option value="Faridpur">Faridpur</option>
-
-                                            <option value="Feni">Feni</option>
-
-                                            <option value="Gaibandha">Gaibandha</option>
-
-                                            <option value="Gazipur">Gazipur</option>
-
-                                            <option value="Gopalganj">Gopalganj</option>
-
-                                            <option value="Habiganj">Habiganj</option>
-
-                                            <option value="Jamalpur">Jamalpur</option>
-
-                                            <option value="Jashore">Jashore</option>
-
-                                            <option value="Jhalokati">Jhalokati</option>
-
-                                            <option value="Jhenaidah">Jhenaidah</option>
-
-                                            <option value="Joypurhat">Joypurhat</option>
-
-                                            <option value="Khagrachari">Khagrachari</option>
-
-                                            <option value="Khulna">Khulna</option>
-
-                                            <option value="Kishoreganj">Kishoreganj</option>
-
-                                            <option value="Kurigram">Kurigram</option>
-
-                                            <option value="Kushtia">Kushtia</option>
-
-                                            <option value="Lakshmipur">Lakshmipur</option>
-
-                                            <option value="Lalmonirhat">Lalmonirhat</option>
-
-                                            <option value="Madaripur">Madaripur</option>
-
-                                            <option value="Magura">Magura</option>
-
-                                            <option value="Manikganj">Manikganj</option>
-
-                                            <option value="Meherpur">Meherpur</option>
-
-                                            <option value="Moulvibazar">Moulvibazar</option>
-
-                                            <option value="Munshiganj">Munshiganj</option>
-
-                                            <option value="Mymensingh">Mymensingh</option>
-
-                                            <option value="Naogaon">Naogaon</option>
-
-                                            <option value="Narail">Narail</option>
-
-                                            <option value="Narayanganj">Narayanganj</option>
-
-                                            <option value="Narsingdi">Narsingdi</option>
-
-                                            <option value="Natore">Natore</option>
-
-                                            <option value="Netrokona">Netrokona</option>
-
-                                            <option value="Nilphamari">Nilphamari</option>
-
-                                            <option value="Noakhali">Noakhali</option>
-
-                                            <option value="Pabna">Pabna</option>
-
-                                            <option value="Panchagarh">Panchagarh</option>
-
-                                            <option value="Patuakhali">Patuakhali</option>
-
-                                            <option value="Pirojpur">Pirojpur</option>
-
-                                            <option value="Rajbari">Rajbari</option>
-
-                                            <option value="Rajshahi">Rajshahi</option>
-
-                                            <option value="Rangamati">Rangamati</option>
-
-                                            <option value="Rangpur">Rangpur</option>
-
-                                            <option value="Satkhira">Satkhira</option>
-
-                                            <option value="Shariatpur">Shariatpur</option>
-
-                                            <option value="Sherpur">Sherpur</option>
-
-                                            <option value="Sirajganj">Sirajganj</option>
-
-                                            <option value="Sunamganj">Sunamganj</option>
-
-                                            <option value="Sylhet">Sylhet</option>
-
-                                            <option value="Tangail">Tangail</option>
-
-                                            <option value="Thakurgaon">Thakurgaon</option>
-
-                                        </select>
-
-                                    </div>
-
-
-
-                                    <div>
-
-                                        <h3 className="text-[#222] font-[600] text-[18px] mb-[4px]">Zip Code</h3>
-
-                                        <input type="number" placeholder="Zip Code" name="zipcode" className="w-full border focus:outline-none px-4 py-3 rounded-[6px]" />
-
-                                    </div>
-
+                                {/* Last Name */}
+                                <div>
+                                    <label
+                                        htmlFor="lastname"
+                                        className="mb-2 block font-semibold"
+                                    >
+                                        Last Name *
+                                    </label>
+
+                                    <input
+                                        id="lastname"
+                                        name="lastname"
+                                        autoComplete="family-name"
+                                        required
+                                        value={billingInfo.lastname}
+                                        onChange={handleBillingChange}
+                                        className="w-full rounded-lg border px-4 py-3"
+                                        placeholder="Last name"
+                                    />
                                 </div>
 
+                                {/* Company Name */}
+                                <div className="md:col-span-2">
+                                    <label
+                                        htmlFor="companyname"
+                                        className="mb-2 block font-semibold"
+                                    >
+                                        Company Name
+                                    </label>
 
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                                    <div>
-
-                                        <h3 className="text-[#222] font-[600] text-[18px] mb-[4px]">Email Address</h3>
-
-                                        <input type="email" placeholder="Email Address" defaultValue={email} name="email" className="w-full border focus:outline-none px-4 py-3 rounded-[6px]" />
-
-                                    </div>
-
-
-
-                                    <div>
-
-                                        <h3 className="text-[#222] font-[600] text-[18px] mb-[4px]">Phone Number</h3>
-
-                                        <input type="number" placeholder="Phone Number" name="phonenumber" className="w-full border focus:outline-none px-4 py-3 rounded-[6px]" />
-
-                                    </div>
-
+                                    <input
+                                        id="companyname"
+                                        name="companyname"
+                                        autoComplete="organization"
+                                        value={billingInfo.companyname}
+                                        onChange={handleBillingChange}
+                                        className="w-full rounded-lg border px-4 py-3"
+                                        placeholder="Optional"
+                                    />
                                 </div>
 
+                                {/* Street Address */}
+                                <div className="md:col-span-2">
+                                    <label
+                                        htmlFor="streetaddress"
+                                        className="mb-2 block font-semibold"
+                                    >
+                                        Street Address *
+                                    </label>
 
-
-                                <div className="flex flex-col w-full">
-
-
-
-                                    <div className="divider"></div> 
-
-
-
+                                    <input
+                                        id="streetaddress"
+                                        name="streetaddress"
+                                        autoComplete="street-address"
+                                        required
+                                        value={billingInfo.streetaddress}
+                                        onChange={handleBillingChange}
+                                        className="w-full rounded-lg border px-4 py-3"
+                                        placeholder="House, road, village or street"
+                                    />
                                 </div>
 
+                                {/* Division */}
+                                <div>
+                                    <label
+                                        htmlFor="division"
+                                        className="mb-2 block font-semibold"
+                                    >
+                                        Division *
+                                    </label>
 
-
-                                <div className="mt-10">
-
-                                    <h3 className="text-[#222] font-[600] text-[26px] mb-[4px]">Additional Info</h3>
-
-                                    <p className="text-[#666] text-[16px] mb-4"> Order Notes(Optional)</p>
-
-                                    <textarea placeholder="Order Notes (Optional)" name="ordernotes" className="w-full border focus:outline-none px-4 py-3 rounded-[6px] h-32 resize-none"></textarea>
-
+                                    <select
+                                        id="division"
+                                        name="division"
+                                        value={billingInfo.division}
+                                        onChange={handleBillingChange}
+                                        required
+                                        className="w-full rounded-lg border bg-white px-4 py-3"
+                                    >
+                                        <option value="" disabled>
+                                            Select Division
+                                        </option>
+                                        <option value="Barishal">Barishal</option>
+                                        <option value="Chattogram">Chattogram</option>
+                                        <option value="Dhaka">Dhaka</option>
+                                        <option value="Khulna">Khulna</option>
+                                        <option value="Mymensingh">Mymensingh</option>
+                                        <option value="Rajshahi">Rajshahi</option>
+                                        <option value="Rangpur">Rangpur</option>
+                                        <option value="Sylhet">Sylhet</option>
+                                    </select>
                                 </div>
 
+                                {/* District */}
+                                <div>
+                                    <label
+                                        htmlFor="district"
+                                        className="mb-2 block font-semibold"
+                                    >
+                                        District *
+                                    </label>
 
+                                    <input
+                                        id="district"
+                                        name="district"
+                                        autoComplete="address-level2"
+                                        required
+                                        value={billingInfo.district}
+                                        onChange={handleBillingChange}
+                                        className="w-full rounded-lg border px-4 py-3"
+                                        placeholder="District"
+                                    />
+                                </div>
 
+                                {/* ZIP Code */}
+                                <div>
+                                    <label
+                                        htmlFor="zipcode"
+                                        className="mb-2 block font-semibold"
+                                    >
+                                        ZIP Code
+                                    </label>
+
+                                    <input
+                                        id="zipcode"
+                                        name="zipcode"
+                                        autoComplete="postal-code"
+                                        value={billingInfo.zipcode}
+                                        onChange={handleBillingChange}
+                                        className="w-full rounded-lg border px-4 py-3"
+                                        placeholder="ZIP code"
+                                    />
+                                </div>
+
+                                {/* Email */}
+                                <div>
+                                    <label
+                                        htmlFor="checkout-email"
+                                        className="mb-2 block font-semibold"
+                                    >
+                                        Email Address
+                                    </label>
+
+                                    <input
+                                        id="checkout-email"
+                                        type="email"
+                                        value={email || ""}
+                                        readOnly
+                                        className="w-full rounded-lg border bg-gray-100 px-4 py-3 text-gray-600"
+                                    />
+                                </div>
+
+                                {/* Phone Number */}
+                                <div className="md:col-span-2">
+                                    <label
+                                        htmlFor="phonenumber"
+                                        className="mb-2 block font-semibold"
+                                    >
+                                        Phone Number *
+                                    </label>
+
+                                    <input
+                                        id="phonenumber"
+                                        name="phonenumber"
+                                        type="tel"
+                                        autoComplete="tel"
+                                        required
+                                        value={billingInfo.phonenumber}
+                                        onChange={handleBillingChange}
+                                        className="w-full rounded-lg border px-4 py-3"
+                                        placeholder="01XXXXXXXXX"
+                                    />
+                                </div>
+
+                                {/* Order Notes */}
+                                <div className="md:col-span-2">
+                                    <label
+                                        htmlFor="ordernotes"
+                                        className="mb-2 block font-semibold"
+                                    >
+                                        Order Notes
+                                    </label>
+
+                                    <textarea
+                                        id="ordernotes"
+                                        name="ordernotes"
+                                        rows="4"
+                                        className="w-full resize-none rounded-lg border px-4 py-3"
+                                        placeholder="Optional notes about your order"
+                                    />
+                                </div>
                             </div>
-
                         </div>
-
                     </div>
 
+                    {/* Order Summary and Payment */}
+                    <div className="lg:col-span-1">
+                        <div className="rounded-xl border bg-white p-5 shadow-sm md:p-8">
+                            <h2 className="mb-6 text-2xl font-bold">
+                                Your Order
+                            </h2>
 
+                            {!cart?.length ? (
+                                <p className="py-8 text-center text-gray-500">
+                                    Your cart is empty.
+                                </p>
+                            ) : (
+                                <>
+                                    <div className="space-y-4">
+                                        {cart.map((item) => {
+                                            const quantity = Math.max(
+                                                1,
+                                                Number(
+                                                    quantities[item._id] ?? 1
+                                                )
+                                            );
 
-                    <div className="h-auto lg:col-span-1">
+                                            return (
+                                                <div
+                                                    key={item._id}
+                                                    className="flex items-center gap-3 border-b pb-4"
+                                                >
+                                                    <img
+                                                        src={item.image}
+                                                        alt={
+                                                            item.product ||
+                                                            "Product"
+                                                        }
+                                                        className="h-14 w-14 rounded object-cover"
+                                                    />
 
-                        <div className="bg-white p-8 rounded-[2px] border shadow-sm">
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-sm font-semibold">
+                                                            {item.product}
+                                                        </p>
 
-                            <h2 className="text-[26px] font-bold mb-6">Your Order</h2>
+                                                        <p className="text-sm text-gray-500">
+                                                            Quantity: {quantity}
+                                                        </p>
+                                                    </div>
 
-                            <div className="space-y-4">
+                                                    <p className="text-sm font-semibold">
+                                                        ৳
+                                                        {formatMoney(
+                                                            Number(item.price) *
+                                                                quantity
+                                                        )}
+                                                    </p>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
 
-                                <div className="flex justify-between mb-4">
+                                    <div className="flex justify-between border-b py-4">
+                                        <span className="text-gray-600">
+                                            Subtotal
+                                        </span>
 
-                                    <h3 className="text-[18px] font-[600]">Product</h3>
+                                        <span className="font-semibold">
+                                            ৳{formatMoney(cartTotal)}
+                                        </span>
+                                    </div>
 
-                                    <h3 className="text-[18px] font-[600]">Total</h3>
+                                    <div className="flex justify-between py-4 text-lg">
+                                        <span className="font-bold">
+                                            Total
+                                        </span>
 
-                                </div>
+                                        <span className="font-bold text-green-700">
+                                            ৳{formatMoney(cartTotal)}
+                                        </span>
+                                    </div>
+                                </>
+                            )}
 
+                            {/* Payment Methods */}
+                            <div className="mt-4">
+                                <h3 className="mb-4 text-lg font-bold">
+                                    Select Payment Method
+                                </h3>
 
+                                {/* Cash on Delivery */}
+                                <label
+                                    className={`mb-3 flex cursor-pointer items-center gap-3 rounded-xl border p-4 ${
+                                        paymentMethod === "cash"
+                                            ? "border-green-600 bg-green-50"
+                                            : "border-gray-200"
+                                    }`}
+                                >
+                                    <input
+                                        type="radio"
+                                        name="paymentMethod"
+                                        value="cash"
+                                        checked={paymentMethod === "cash"}
+                                        onChange={() =>
+                                            setPaymentMethod("cash")
+                                        }
+                                        className="accent-green-600"
+                                    />
 
-                                {cart.length === 0 ? (
+                                    <FaMoneyBillWave className="text-xl text-green-600" />
 
-                                    <div className="text-center py-10 text-gray-500">Your cart is empty</div>
+                                    <div>
+                                        <span className="block font-semibold">
+                                            Cash on Delivery
+                                        </span>
 
-                                ) : (
+                                        <span className="text-xs text-gray-500">
+                                            Pay when your order arrives
+                                        </span>
+                                    </div>
+                                </label>
 
-                                    cart.map((item) => (
+                                {/* Online Payment */}
+                                <p className="mb-3 mt-5 text-sm font-semibold text-gray-700">
+                                    Online Payment
+                                </p>
 
-                                        <div key={item._id} className="flex items-center justify-between mb-4 border-b pb-3">
+                                {ONLINE_PAYMENT_METHODS.map((method) => (
+                                    <label
+                                        key={method.value}
+                                        className={`mb-3 flex cursor-pointer items-center gap-3 rounded-xl border p-4 ${
+                                            paymentMethod === method.value
+                                                ? "border-green-600 bg-green-50"
+                                                : "border-gray-200"
+                                        }`}
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="paymentMethod"
+                                            value={method.value}
+                                            checked={
+                                                paymentMethod === method.value
+                                            }
+                                            onChange={() =>
+                                                setPaymentMethod(method.value)
+                                            }
+                                            className="accent-green-600"
+                                        />
 
-                                            <div className="flex items-center gap-2">
-
-                                                <img src={item.image} alt="" className='w-full lg:w-[50px] h-full lg:h-[50px]' />
-
-                                                <span>{item.product} x {quantities[item._id]}</span>
-
-                                            </div>
-
-                                            <div>
-
-                                                <span>৳{item.price * quantities[item._id]}</span>
-
-                                            </div>
-
+                                        <div
+                                            className="flex h-10 w-10 items-center justify-center rounded-lg"
+                                            style={{
+                                                color: method.color,
+                                                backgroundColor:
+                                                    method.background,
+                                            }}
+                                        >
+                                            <FaMobileAlt size={20} />
                                         </div>
 
-                                    ))
+                                        <div>
+                                            <span className="block font-semibold">
+                                                {method.label}
+                                            </span>
 
-                                )}
-
-
-
-                                {cart.length > 0 && (
-
-                                    <>
-
-                                        <div className="flex justify-between mb-4">
-
-                                            <h3 className="text-[18px] font-[600]">Subtotal</h3>
-
-                                            <h3 className="text-[18px] font-[600]">৳{totalPrice.toFixed(2)}</h3>
-
+                                            <span className="text-xs text-gray-500">
+                                                Simulated payment
+                                            </span>
                                         </div>
-
-                                        <div className="flex justify-between mb-4">
-
-                                            <h3 className="text-[18px] font-[600]">Total</h3>
-
-                                            <h3 className="text-[18px] font-[600]">৳{totalPrice.toFixed(2)}</h3>
-
-                                        </div>
-
-                                    </>
-
-                                )}
-
+                                    </label>
+                                ))}
                             </div>
 
-                            <div className="space-y-4 mt-6">
+                            {/* Submit Button */}
+                            <button
+                                type="submit"
+                                disabled={isSubmitting || !cart?.length}
+                                className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-[#00B207] px-5 py-3 font-bold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+                            >
+                                {isSubmitting
+                                    ? "Please wait..."
+                                    : paymentMethod === "cash"
+                                      ? "Place Order"
+                                      : "Proceed to Payment"}
 
-                                <h3 className="text-[18px] font-[600] mb-[4px]">Payment Method</h3>
-
-                                <div className="flex items-center mb-4">
-
-                                    <input type="radio" name="paymentMethod" value="cash" id="cash" className="mr-2" defaultChecked />
-
-                                    <label htmlFor="cash" className="text-[16px]">Cash on Delivery</label>
-
-                                </div>
-
-                                <div className="flex items-center mb-4">
-
-                                    <input type="radio" name="paymentMethod" value="card" id="card" className="mr-2" />
-
-                                    <label htmlFor="card" className="text-[16px]">Credit/Debit Card</label>
-
-                                </div>
-
-                            </div>
-
-
-
-                            {
-
-                                (cart.length === 0 || isSubmitting) ? <button disabled type="submit" className="bg-[#eee] cursor-not-allowed text-[#00B207] py-3 px-6 rounded-[6px] w-full mt-4">{isSubmitting ? "Placing Order..." : "Place Order"}</button>
-
-                                :
-
-                                <button type="submit" className="bg-[#00B207] text-white py-3 px-6 rounded-[6px] w-full mt-4">{isSubmitting ? "Placing Order..." : "Place Order"}</button>
-
-                            }
-
-
-
+                                {!isSubmitting && <FaArrowRight />}
+                            </button>
                         </div>
-
                     </div>
-
                 </form>
-
             </div>
-
         </section>
-
     );
-
 };
-
-
 
 export default Checkout;
