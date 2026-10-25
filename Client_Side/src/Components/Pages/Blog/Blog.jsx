@@ -1,39 +1,98 @@
-import React from 'react';
-import { MdArrowRightAlt } from 'react-icons/md';
-import { Link } from 'react-router-dom';
-import { GoTag } from 'react-icons/go';
-import { CiUser } from 'react-icons/ci';
-import { FaRegCommentAlt } from 'react-icons/fa';
+import { Link } from "react-router-dom";
+import {
+    FaArrowRight,
+    FaCalendarAlt,
+    FaUser,
+} from "react-icons/fa";
 
 const Blog = ({ blog }) => {
-    if (!blog) return null;
+    const {
+        _id,
+        title,
+        main_image,
+        date,
+        author,
+        category,
+        short_description,
+        description,
+        content,
+    } = blog;
 
-    const {_id, title, main_image, date, author, category, comments } = blog;
+    const image =
+        main_image ||
+        blog.image ||
+        "https://placehold.co/800x550/f0fdf4/166534?text=Shopery+Journal";
+
+    const formattedDate = date || blog.createdAt
+        ? new Date(date || blog.createdAt).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+        })
+        : "Date unavailable";
+
+    const summary = short_description || description || content || "";
+
+    const excerpt =
+        typeof summary === "string"
+            ? summary.replace(/<[^>]*>/g, "").slice(0, 145)
+            : "";
 
     return (
-        <article className="h-auto relative rounded-sm bg-[#fff] shadow-md hover:shadow-xl hover:border-0 overflow-hidden transition cursor-pointer w-full"
-        data-aos="zoom-in"
-        data-aos-delay="50"
-        data-aos-duration="1000"
-        data-aos-easing="ease-in-out">
-            <div className="hover:relative overflow-hidden duration-1000">
-                <img alt="" src={main_image} className="overflow-hidden w-full hover:scale-105 duration-1000 ease-in-out object-cover" />
-                <div className='bg-[#fff] px-8 py-2 rounded-[5px] absolute left-2 top-3'>
-                    <h4>{date}</h4>
-                </div>
-            </div>
+        <article className="blog-card">
+            <Link
+                to={`/seeblog/${_id}`}
+                className="blog-card-image-link"
+                aria-label={`Read ${title || "blog article"}`}
+            >
+                <img
+                    src={image}
+                    alt={title || "Shopery blog article"}
+                    className="blog-card-image"
+                    loading="lazy"
+                    onError={(event) => {
+                        event.currentTarget.onerror = null;
+                        event.currentTarget.src =
+                            "https://placehold.co/800x550/f0fdf4/166534?text=Shopery+Journal";
+                    }}
+                />
 
-            <div className="p-4 sm:p-6">
-                <div className="flex items-center gap-3">
-                    <p className='text-[#7c7a7a] text-[15px] flex items-center gap-1'><GoTag /> {category}</p>
-                    <p className='text-[#7c7a7a] text-[15px] flex items-center gap-1'><CiUser /> By {author}</p>
-                    <p className='text-[#7c7a7a] text-[15px] flex items-center gap-1'><FaRegCommentAlt /> {comments} Comments</p>
+                {category && (
+                    <span className="blog-card-category">{category}</span>
+                )}
+            </Link>
+
+            <div className="blog-card-content">
+                <div className="blog-card-meta">
+                    <span>
+                        <FaCalendarAlt />
+                        {formattedDate}
+                    </span>
+
+                    {author && (
+                        <span>
+                            <FaUser />
+                            {author}
+                        </span>
+                    )}
                 </div>
-                <Link to={`/seeblog/${_id}`}>
-                    <h3 className="mt-4 text-lg text-[#1A1A1A] hover:text-[#00B307]">{title}</h3>
-                </Link>
-                <Link to={`/seeblog/${_id}`}>
-                    <button className="text-[#00B307] my-4 flex items-center gap-2">Read more <MdArrowRightAlt className="text-[20px]" /></button>
+
+                <h3 className="blog-card-title">
+                    <Link to={`/seeblog/${_id}`}>
+                        {title || "Untitled article"}
+                    </Link>
+                </h3>
+
+                {excerpt && (
+                    <p className="blog-card-description">
+                        {excerpt}
+                        {summary.length > 145 ? "..." : ""}
+                    </p>
+                )}
+
+                <Link to={`/seeblog/${_id}`} className="blog-card-read-more">
+                    Read article
+                    <FaArrowRight />
                 </Link>
             </div>
         </article>

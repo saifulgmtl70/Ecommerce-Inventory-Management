@@ -1,7 +1,515 @@
-.discount{
-    background: url(https://i.ibb.co/HV6JhT9/Discount-Bannar.png);
+/* =====================================
+   SHOPERY SUMMER SALE
+===================================== */
+
+.discount-section {
+    width: 100%;
+    padding: 25px 20px;
+    font-family: "Nunito Sans", sans-serif;
+}
+
+.discount-banner {
+    position: relative;
+    display: flex;
+    min-height: 460px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 35px;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 55px 7%;
+    overflow: hidden;
+    isolation: isolate;
+
+    background-color: #14271b;
+    background-image:
+        linear-gradient(
+            90deg,
+            rgba(12, 31, 19, 0.96) 0%,
+            rgba(12, 31, 19, 0.87) 43%,
+            rgba(12, 31, 19, 0.30) 100%
+        ),
+        url("https://i.ibb.co/HV6JhT9/Discount-Bannar.png");
+
     background-repeat: no-repeat;
-    background-size: cover;
     background-position: center;
-    
+    background-size: cover;
+
+    border-radius: 18px;
+    box-shadow: 0 18px 45px rgba(20, 39, 27, 0.12);
+}
+
+/* =====================================
+   DECORATIVE ELEMENTS
+===================================== */
+
+.discount-decoration {
+    position: absolute;
+    z-index: -1;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.discount-decoration-one {
+    top: -160px;
+    right: 10%;
+    width: 430px;
+    height: 430px;
+}
+
+.discount-decoration-two {
+    right: -70px;
+    bottom: -250px;
+    width: 480px;
+    height: 480px;
+}
+
+/* =====================================
+   MAIN CONTENT
+===================================== */
+
+.discount-content {
+    position: relative;
+    z-index: 2;
+    width: 58%;
+    max-width: 600px;
+}
+
+.discount-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 22px;
+    padding: 8px 13px;
+
+    border: 1px solid rgba(255, 138, 0, 0.4);
+    border-radius: 30px;
+    background: rgba(255, 138, 0, 0.12);
+
+    color: #ffad42;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.discount-badge svg {
+    font-size: 17px;
+}
+
+.discount-subtitle {
+    margin: 0 0 8px;
+    color: #d1ded4;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+}
+
+.discount-title {
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(40px, 5vw, 67px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -2px;
+}
+
+.discount-title span {
+    color: #ff9b24;
+}
+
+.discount-description {
+    max-width: 440px;
+    margin: 18px 0 0;
+    color: #d4ddd5;
+    font-size: 14px;
+    line-height: 1.9;
+}
+
+/* =====================================
+   BENEFITS
+===================================== */
+
+.discount-benefits {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 22px;
+}
+
+.discount-benefit {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #edf6ef;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.discount-benefit svg {
+    flex-shrink: 0;
+    color: #55d78b;
+    font-size: 20px;
+}
+
+/* =====================================
+   CALL TO ACTION
+===================================== */
+
+.discount-button {
+    display: inline-flex;
+    min-height: 49px;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 28px;
+    padding: 0 25px;
+
+    border: 1px solid #00b307;
+    border-radius: 8px;
+    background: #00b307;
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+
+    box-shadow: 0 7px 20px rgba(0, 179, 7, 0.20);
+
+    transition:
+        background 0.25s ease,
+        border-color 0.25s ease,
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.discount-button svg {
+    font-size: 22px;
+    transition: transform 0.25s ease;
+}
+
+.discount-button:hover {
+    transform: translateY(-3px);
+    border-color: #00ce39;
+    background: #00a629;
+    color: #ffffff;
+    box-shadow: 0 10px 25px rgba(0, 179, 7, 0.30);
+}
+
+.discount-button:hover svg {
+    transform: translateX(5px);
+}
+
+.discount-footer-text {
+    margin: 17px 0 0;
+    color: #aebeb1;
+    font-size: 11px;
+    letter-spacing: 0.3px;
+}
+
+/* =====================================
+   DISCOUNT CIRCLE
+===================================== */
+
+.discount-highlight {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    width: 220px;
+    height: 220px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.10);
+    box-shadow:
+        0 0 0 12px rgba(255, 255, 255, 0.04),
+        0 0 0 24px rgba(255, 255, 255, 0.025);
+
+    backdrop-filter: blur(5px);
+
+    transform: rotate(7deg);
+    transition: transform 0.35s ease;
+}
+
+.discount-banner:hover .discount-highlight {
+    transform: rotate(0deg) scale(1.04);
+}
+
+.discount-highlight-inner {
+    display: flex;
+    width: 190px;
+    height: 190px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px dashed rgba(255, 255, 255, 0.65);
+    border-radius: 50%;
+    text-align: center;
+}
+
+.discount-highlight-up-to {
+    color: #e4eee6;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.discount-highlight-number {
+    display: flex;
+    align-items: flex-start;
+    margin-top: 3px;
+    color: #ff9b24;
+    font-size: 76px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -5px;
+}
+
+.discount-highlight-number span {
+    margin-top: 8px;
+    font-size: 29px;
+    letter-spacing: 0;
+}
+
+.discount-highlight-label {
+    margin-top: 1px;
+    color: #ffffff;
+    font-size: 21px;
+    font-weight: 900;
+    letter-spacing: 5px;
+}
+
+.discount-highlight-line {
+    width: 55px;
+    height: 2px;
+    margin: 9px 0;
+    background: #00d84b;
+}
+
+.discount-highlight-brand {
+    color: #d4e1d6;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+/* =====================================
+   TABLET
+===================================== */
+
+@media (max-width: 900px) {
+    .discount-section {
+        padding: 20px 16px;
+    }
+
+    .discount-banner {
+        min-height: 420px;
+        gap: 20px;
+        padding: 45px 5%;
+        background-position: 58% center;
+    }
+
+    .discount-content {
+        width: 62%;
+    }
+
+    .discount-title {
+        font-size: clamp(39px, 6vw, 56px);
+    }
+
+    .discount-highlight {
+        width: 175px;
+        height: 175px;
+    }
+
+    .discount-highlight-inner {
+        width: 150px;
+        height: 150px;
+    }
+
+    .discount-highlight-number {
+        font-size: 58px;
+    }
+
+    .discount-highlight-number span {
+        font-size: 23px;
+    }
+
+    .discount-highlight-label {
+        font-size: 17px;
+    }
+}
+
+/* =====================================
+   MOBILE
+===================================== */
+
+@media (max-width: 600px) {
+    .discount-section {
+        padding: 16px 12px;
+    }
+
+    .discount-banner {
+        min-height: auto;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 30px;
+        padding: 34px 22px;
+
+        background-image:
+            linear-gradient(
+                110deg,
+                rgba(12, 31, 19, 0.96),
+                rgba(12, 31, 19, 0.84)
+            ),
+            url("https://i.ibb.co/HV6JhT9/Discount-Bannar.png");
+
+        background-position: center;
+        border-radius: 13px;
+    }
+
+    .discount-content {
+        width: 100%;
+        max-width: none;
+    }
+
+    .discount-badge {
+        margin-bottom: 17px;
+        padding: 7px 10px;
+        font-size: 9px;
+        letter-spacing: 1.2px;
+    }
+
+    .discount-subtitle {
+        font-size: 10px;
+        letter-spacing: 1.8px;
+    }
+
+    .discount-title {
+        font-size: clamp(43px, 12vw, 58px);
+        letter-spacing: -1.5px;
+    }
+
+    .discount-description {
+        margin-top: 14px;
+        font-size: 12px;
+        line-height: 1.8;
+    }
+
+    .discount-desktop-break {
+        display: none;
+    }
+
+    .discount-benefits {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 18px;
+    }
+
+    .discount-benefit {
+        font-size: 11px;
+    }
+
+    .discount-button {
+        min-height: 45px;
+        margin-top: 23px;
+        padding: 0 20px;
+        font-size: 13px;
+    }
+
+    .discount-footer-text {
+        font-size: 10px;
+        line-height: 1.6;
+    }
+
+    .discount-highlight {
+        width: 155px;
+        height: 155px;
+        align-self: center;
+        margin: 0 auto 10px;
+    }
+
+    .discount-highlight-inner {
+        width: 132px;
+        height: 132px;
+    }
+
+    .discount-highlight-up-to {
+        font-size: 8px;
+        letter-spacing: 1.5px;
+    }
+
+    .discount-highlight-number {
+        font-size: 51px;
+    }
+
+    .discount-highlight-number span {
+        margin-top: 5px;
+        font-size: 20px;
+    }
+
+    .discount-highlight-label {
+        font-size: 15px;
+        letter-spacing: 4px;
+    }
+
+    .discount-highlight-line {
+        margin: 6px 0;
+    }
+
+    .discount-highlight-brand {
+        font-size: 7px;
+        letter-spacing: 1.5px;
+    }
+}
+
+/* =====================================
+   SMALL MOBILE
+===================================== */
+
+@media (max-width: 360px) {
+    .discount-banner {
+        padding: 28px 16px;
+    }
+
+    .discount-title {
+        font-size: 40px;
+    }
+
+    .discount-description {
+        font-size: 11px;
+    }
+
+    .discount-highlight {
+        width: 140px;
+        height: 140px;
+    }
+
+    .discount-highlight-inner {
+        width: 120px;
+        height: 120px;
+    }
+
+    .discount-highlight-number {
+        font-size: 45px;
+    }
+}
+
+/* =====================================
+   REDUCED MOTION
+===================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .discount-button,
+    .discount-button svg,
+    .discount-highlight {
+        transition: none;
+    }
 }

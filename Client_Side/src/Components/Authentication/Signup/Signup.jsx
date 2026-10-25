@@ -13,7 +13,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 import useAxiosPublic from "../../Hooks/useAxiosPublic";
 
-import Newsletter from "../../Pages/Shop/Products/Newsletter";
+//import Newsletter from "../../Pages/Shop/Products/Newsletter";
 
 import { Helmet } from "react-helmet-async";
 
@@ -412,7 +412,6 @@ const Signup = () => {
 
             {/* NEWSLETTER */}
 
-            <Newsletter />
         </>
     );
 };

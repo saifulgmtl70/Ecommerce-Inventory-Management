@@ -1,144 +1,327 @@
-import React, { useState, useEffect } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import useAuth from '../../../Hooks/useAuth';
+import { useEffect, useState } from "react";
+import { FaPaperPlane, FaRegCommentDots, FaUserCircle } from "react-icons/fa";
+import { toast } from "react-toastify";
+import useAuth from "../../../hooks/useAuth";
+
+const API_URL = "http://localhost:5000";
 
 const Comments = ({ blogId }) => {
-    const [commentText, setCommentText] = useState('');
+    const { user } = useAuth();
+
     const [comments, setComments] = useState([]);
-
-    const {user} = useAuth();
-
-    const email = user.email;
-    const photo = user.photoURL;
-    const name = user.displayName
-
-    const fetchComments = async () => {
-        try {
-            const response = await fetch(`http://localhost:5000/blogs/${blogId}/comments`);
-            if (response.ok) {
-                const data = await response.json();
-                setComments(data);
-            }
-        } catch (error) {
-            console.error("Failed to fetch comments:", error);
-        }
-    };
+    const [name, setName] = useState(user?.displayName || "");
+    const [email, setEmail] = useState(user?.email || "");
+    const [commentText, setCommentText] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState("");
 
     useEffect(() => {
+        setName(user?.displayName || "");
+        setEmail(user?.email || "");
+    }, [user]);
+
+    useEffect(() => {
+        if (!blogId) {
+            setLoading(false);
+            return;
+        }
+
+        const controller = new AbortController();
+
+        const fetchComments = async () => {
+            try {
+                setLoading(true);
+                setError("");
+
+                const response = await fetch(
+                    `${API_URL}/blogs/${blogId}/comments`,
+                    { signal: controller.signal }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Comments load করা যায়নি।");
+                }
+
+                const data = await response.json();
+
+                setComments(
+                    Array.isArray(data)
+                        ? data
+                        : Array.isArray(data.comments)
+                            ? data.comments
+                            : []
+                );
+            } catch (err) {
+                if (err.name !== "AbortError") {
+                    setError(err.message || "Comments load করতে সমস্যা হয়েছে।");
+                }
+            } finally {
+                if (!controller.signal.aborted) {
+                    setLoading(false);
+                }
+            }
+        };
+
         fetchComments();
+
+        return () => controller.abort();
     }, [blogId]);
 
-    const handlePostingComment = async (e) => {
-        e.preventDefault();
-    
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+
+        const cleanName = name.trim();
+        const cleanEmail = email.trim();
+        const cleanComment = commentText.trim();
+
+        if (!cleanName || !cleanEmail || !cleanComment) {
+            toast.error("নাম, ইমেইল ও comment পূরণ করো।");
+            return;
+        }
+
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailPattern.test(cleanEmail)) {
+            toast.error("সঠিক ইমেইল ঠিকানা দাও।");
+            return;
+        }
+
+        if (cleanComment.length > 2000) {
+            toast.error("Comment সর্বোচ্চ ২০০০ অক্ষরের হতে পারবে।");
+            return;
+        }
+
         try {
-            const response = await fetch(`http://localhost:5000/blogs/${blogId}/comments`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ commentText, name, email, photo }),
-            });
-    
-            if (response.ok) {
-                const newComment = await response.json();
-                setComments([...comments, newComment]);
-                setCommentText('');
-                name;
-                email;
-                photo;
-                toast.success(`Posted your Comment`, {
-                    position: "top-center",
-                    autoClose: 3000,
-                });
-            } else {
-                toast.error("Failed to post comment", {
-                    position: "top-center",
-                    autoClose: 3000,
-                });
+            setSubmitting(true);
+
+            const newComment = {
+                name: cleanName,
+                email: user?.email || cleanEmail,
+                photo:
+                    user?.photoURL ||
+                    user?.photoURL ||
+                    "",
+                commentText: cleanComment,
+            };
+
+            const response = await fetch(
+                `${API_URL}/blogs/${blogId}/comments`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(newComment),
+                }
+            );
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message || "Comment submit করা যায়নি।"
+                );
             }
-        } catch (error) {
-            toast.error("Error posting comment", {
-                position: "top-center",
-                autoClose: 3000,
-            });
+
+            const savedComment = data.comment || data;
+
+            if (
+                savedComment &&
+                typeof savedComment === "object" &&
+                (savedComment.commentText || savedComment._id)
+            ) {
+                setComments((previousComments) => [
+                    savedComment,
+                    ...previousComments,
+                ]);
+            } else {
+                const refreshResponse = await fetch(
+                    `${API_URL}/blogs/${blogId}/comments`
+                );
+
+                if (refreshResponse.ok) {
+                    const refreshedData = await refreshResponse.json();
+
+                    setComments(
+                        Array.isArray(refreshedData)
+                            ? refreshedData
+                            : Array.isArray(refreshedData.comments)
+                                ? refreshedData.comments
+                                : []
+                    );
+                }
+            }
+
+            setCommentText("");
+            toast.success("তোমার comment সফলভাবে জমা হয়েছে।");
+        } catch (err) {
+            toast.error(err.message || "Comment submit করতে সমস্যা হয়েছে।");
+        } finally {
+            setSubmitting(false);
         }
     };
-    
 
     return (
-        <section className='py-4 mt-4'>
-            <ToastContainer />
-            <h2 className='text-[#222] font-bold text-[20px] mb-4'>Leave a Comment</h2>
+        <div className="blog-comments">
+            <form className="blog-comment-form" onSubmit={handleSubmit}>
+                <div className="blog-comment-form-heading">
+                    <FaRegCommentDots />
+                    <h3>Leave a comment</h3>
+                </div>
 
-            <form onSubmit={handlePostingComment} className='space-y-3 my-4 mb-8'>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                    <div>
-                        <h4 className='text-[#333] text-[16px] mb-2'>Full Name</h4>
+                <p className="blog-comment-form-subtitle">
+                    তোমার মতামত জানাও। Comment করার আগে তথ্যগুলো দেখে নাও।
+                </p>
+
+                <div className="blog-comment-fields">
+                    <div className="blog-comment-field">
+                        <label htmlFor="comment-name">Your name</label>
                         <input
+                            id="comment-name"
                             type="text"
-                            placeholder='example'
-                            className="w-full border focus:outline-none focus:border-[#479551d5] px-4 py-3 rounded-[6px]"
-                            defaultValue={user.displayName}
-                            onChange={(e) => setName(e.target.value)}
+                            value={name}
+                            onChange={(event) => setName(event.target.value)}
+                            placeholder="Enter your name"
+                            maxLength={100}
+                            autoComplete="name"
                             required
                         />
                     </div>
 
-                    <div>
-                        <h4 className='text-[#333] text-[16px] mb-2'>Email</h4>
+                    <div className="blog-comment-field">
+                        <label htmlFor="comment-email">Email address</label>
                         <input
+                            id="comment-email"
                             type="email"
-                            placeholder='example@gmail.com'
-                            className="w-full border focus:outline-none focus:border-[#479551d5] px-4 py-3 rounded-[6px]"
-                            defaultValue={user.email}
-                            
+                            value={email}
+                            onChange={(event) => setEmail(event.target.value)}
+                            placeholder="you@example.com"
+                            maxLength={254}
+                            autoComplete="email"
                             required
+                            readOnly={Boolean(user?.email)}
                         />
                     </div>
                 </div>
 
-                <div>
-                    <h4 className='text-[#333] text-[16px] mb-2'>Message</h4>
+                <div className="blog-comment-field">
+                    <label htmlFor="comment-text">Your comment</label>
                     <textarea
-                        className="w-full border focus:outline-none px-4 py-3 rounded-[6px] h-32 resize-none focus:border-[#479551d5]"
+                        id="comment-text"
                         value={commentText}
-                        onChange={(e) => setCommentText(e.target.value)}
+                        onChange={(event) => setCommentText(event.target.value)}
+                        placeholder="Share your thoughts..."
+                        rows={5}
+                        maxLength={2000}
                         required
                     />
+
+                    <span className="blog-comment-character-count">
+                        {commentText.length}/2000
+                    </span>
                 </div>
 
-                <div>
-                    <button className='px-7 py-[10px] rounded-[25px] flex items-center gap-3 bg-[#00B307] text-[#FFF]'>
-                        Post Comments
-                    </button>
-                </div>
+                <button
+                    type="submit"
+                    className="blog-comment-submit"
+                    disabled={submitting}
+                >
+                    {submitting ? "Submitting..." : "Post comment"}
+                    <FaPaperPlane />
+                </button>
             </form>
 
-            {/* Render Comments */}
-            <h3 className='text-[#222] font-[600] text-[17px] mb-5'>Comments</h3>
+            <div className="blog-comments-list-section">
+                <div className="blog-comments-list-heading">
+                    <h3>Readers' comments</h3>
+                    <span>{comments.length}</span>
+                </div>
 
-            <ul className='space-y-4'>
-                {comments.map((comment, index) => (
-                    <li key={index} className='flex items-start gap-2 border-b pb-4 mb-7'>
-                        <div>
-                            <img src={comment.photo} className="w-[60px] h-[60px] rounded-full" alt="" />
-                        </div>
-                        <div>
-                            <h4 className='text-[#222] flex items-center text-[17px] mb-1'>{comment.name} 
-                                <p className='text-[#777] text-[12px]'>
-                                    . {new Date(comment.createdAt).toLocaleString()}
-                                </p> 
-                            </h4>
-                            <p className='text-[#555] text-[15px] mb-2'>{comment.commentText}</p>
-                            
-                        </div>
-                    </li>
-                ))}
+                {loading && (
+                    <div className="blog-comments-message">
+                        Loading comments...
+                    </div>
+                )}
 
-            </ul>
-        </section>
+                {!loading && error && (
+                    <div className="blog-comments-message blog-comments-error">
+                        {error}
+                    </div>
+                )}
+
+                {!loading && !error && comments.length === 0 && (
+                    <div className="blog-comments-empty">
+                        <FaRegCommentDots />
+                        <p>No comments yet. Be the first to comment!</p>
+                    </div>
+                )}
+
+                {!loading && !error && comments.length > 0 && (
+                    <div className="blog-comments-list">
+                        {comments.map((comment, index) => {
+                            const commentId =
+                                comment._id ||
+                                `${comment.email || "reader"}-${index}`;
+
+                            const commentName = comment.name || "Reader";
+                            const photo = comment.photo || comment.photoURL;
+                            const commentDate =
+                                comment.createdAt || comment.date;
+
+                            return (
+                                <article
+                                    className="blog-comment-item"
+                                    key={commentId}
+                                >
+                                    <div className="blog-comment-avatar">
+                                        {photo ? (
+                                            <img
+                                                src={photo}
+                                                alt={commentName}
+                                                onError={(event) => {
+                                                    event.currentTarget.style.display =
+                                                        "none";
+                                                }}
+                                            />
+                                        ) : (
+                                            <FaUserCircle />
+                                        )}
+                                    </div>
+
+                                    <div className="blog-comment-body">
+                                        <div className="blog-comment-author-row">
+                                            <h4>{commentName}</h4>
+
+                                            {commentDate && (
+                                                <time>
+                                                    {new Date(
+                                                        commentDate
+                                                    ).toLocaleDateString(
+                                                        "en-GB",
+                                                        {
+                                                            day: "2-digit",
+                                                            month: "short",
+                                                            year: "numeric",
+                                                        }
+                                                    )}
+                                                </time>
+                                            )}
+                                        </div>
+
+                                        <p>
+                                            {comment.commentText ||
+                                                comment.text ||
+                                                ""}
+                                        </p>
+                                    </div>
+                                </article>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        </div>
     );
 };
 

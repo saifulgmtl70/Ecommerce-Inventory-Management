@@ -1,106 +1,263 @@
-import { HiOutlineHome } from "react-icons/hi";
-import { Link } from "react-router-dom";
-import Newsletter from "../Shop/Products/Newsletter";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { FaSearch, FaRegNewspaper, FaArrowDown } from "react-icons/fa";
 import Blog from "./Blog";
+import "./blog.css";
 
-import { Helmet } from 'react-helmet-async';
+const API_URL = "http://localhost:5000";
 
 const Blogs = () => {
     const [blogs, setBlogs] = useState([]);
-    const [filter, setFilter] = useState({ category: '', search: '' });
-    const [sort, setSort] = useState('');
+    const [searchText, setSearchText] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("All");
+    const [sortOrder, setSortOrder] = useState("latest");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     useEffect(() => {
-        fetch('http://localhost:5000/blogs')
-            .then(res => res.json())
-            .then(data => setBlogs(data))
-            .catch(error => console.error('Error fetching blogs:', error));
+        const controller = new AbortController();
+
+        const fetchBlogs = async () => {
+            try {
+                setLoading(true);
+                setError("");
+
+                const response = await fetch(`${API_URL}/blogs`, {
+                    signal: controller.signal,
+                });
+
+                if (!response.ok) {
+                    throw new Error(
+                        `Blog load failed. Server returned ${response.status}.`
+                    );
+                }
+
+                const data = await response.json();
+
+                const blogList = Array.isArray(data)
+                    ? data
+                    : Array.isArray(data.blogs)
+                        ? data.blogs
+                        : [];
+
+                setBlogs(blogList);
+            } catch (err) {
+                if (err.name !== "AbortError") {
+                    setError(
+                        "Blog load করা যাচ্ছে না। Backend চালু আছে কি না এবং /blogs API ঠিক আছে কি না পরীক্ষা করো।"
+                    );
+                }
+            } finally {
+                if (!controller.signal.aborted) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchBlogs();
+
+        return () => controller.abort();
     }, []);
 
-    const handleFilterChange = (e) => {
-        setFilter({ ...filter, [e.target.name]: e.target.value });
-    };
+    const categories = useMemo(() => {
+        const categoryNames = blogs
+            .map((blog) => blog.category?.trim())
+            .filter(Boolean);
 
-    const handleSortChange = (e) => {
-        setSort(e.target.value);
-    };
+        return ["All", ...new Set(categoryNames)];
+    }, [blogs]);
 
-    const filteredBlogs = blogs.filter(blog => {
-        return (
-            (filter.category ? blog.category === filter.category : true) &&
-            (filter.search ? blog.title.toLowerCase().includes(filter.search.toLowerCase()) : true)
-        );
-    });
+    const filteredBlogs = useMemo(() => {
+        const search = searchText.trim().toLowerCase();
 
-    const sortedBlogs = filteredBlogs.sort((a, b) => {
-        if (sort === 'newest') {
-            return new Date(b.date) - new Date(a.date);
-        } else if (sort === 'oldest') {
-            return new Date(a.date) - new Date(b.date);
-        }
-        return 0;
-    });
+        const result = blogs.filter((blog) => {
+            const title = String(blog.title || "").toLowerCase();
+            const category = String(blog.category || "").toLowerCase();
+            const author = String(blog.author || "").toLowerCase();
+            const description = String(
+                blog.short_description || blog.description || blog.content || ""
+            ).toLowerCase();
+
+            const matchesSearch =
+                !search ||
+                title.includes(search) ||
+                category.includes(search) ||
+                author.includes(search) ||
+                description.includes(search);
+
+            const matchesCategory =
+                selectedCategory === "All" ||
+                blog.category === selectedCategory;
+
+            return matchesSearch && matchesCategory;
+        });
+
+        result.sort((a, b) => {
+            const dateA = new Date(a.date || a.createdAt || 0).getTime();
+            const dateB = new Date(b.date || b.createdAt || 0).getTime();
+
+            if (sortOrder === "oldest") {
+                return dateA - dateB;
+            }
+
+            return dateB - dateA;
+        });
+
+        return result;
+    }, [blogs, searchText, selectedCategory, sortOrder]);
 
     return (
-        <section className="nunito_sans">
-            <Helmet>
-                <title>Shopery | Blog </title>
-            </Helmet>
-            <div className="specific_product_banner h-full lg:h-[30vh] mb-2">
-                <div className="text-[17px] text-white breadcrumbs px-12 py-10 mb-5">
-                    <ul>
-                        <li><Link to="/" className="flex items-center gap-1"><HiOutlineHome />Home</Link></li>
-                        <li className="text-[#00B207] font-bold">Blog </li>
-                    </ul>
+        <main className="shopery-blog-page">
+            <section className="blog-hero">
+                <div className="blog-hero-decoration blog-hero-decoration-one" />
+                <div className="blog-hero-decoration blog-hero-decoration-two" />
+
+                <div className="blog-container blog-hero-content">
+                    <span className="blog-eyebrow">
+                        <FaRegNewspaper />
+                        SHOPERY JOURNAL
+                    </span>
+
+                    <h1>
+                        Ideas that inspire.
+                        <br />
+                        <span>Stories that matter.</span>
+                    </h1>
+
+                    <p>
+                        Discover helpful guides, fresh ideas, and practical
+                        insights for smarter shopping and everyday living.
+                    </p>
+
+                    <a href="#blog-articles" className="blog-hero-button">
+                        Explore articles
+                        <FaArrowDown />
+                    </a>
                 </div>
-            </div>
+            </section>
 
-            <div className="px-7 lg:px-14 py-10">
-                {/* Filter Section */}
+            <section
+                id="blog-articles"
+                className="blog-container blog-listing-section"
+            >
+                <div className="blog-section-heading">
+                    <div>
+                        <span className="blog-section-kicker">
+                            THE LATEST STORIES
+                        </span>
+                        <h2>Explore our journal</h2>
+                        <p>
+                            Useful reads, thoughtful ideas, and inspiration for
+                            your next discovery.
+                        </p>
+                    </div>
 
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 mb-10">
-                    <div className="">
+                    <div className="blog-result-count">
+                        <strong>{filteredBlogs.length}</strong>
+                        <span>
+                            {filteredBlogs.length === 1 ? " article" : " articles"}
+                        </span>
+                    </div>
+                </div>
+
+                <div className="blog-toolbar">
+                    <div className="blog-search-box">
+                        <FaSearch aria-hidden="true" />
                         <input
-                            type="text"
-                            name="search"
-                            placeholder="Search by title"
-                            value={filter.search}
-                            onChange={handleFilterChange}
-                            className="p-2 border focus:outline-none w-full rounded"
+                            type="search"
+                            placeholder="Search articles, topics, authors..."
+                            value={searchText}
+                            onChange={(event) => setSearchText(event.target.value)}
+                            aria-label="Search blog articles"
                         />
+
+                        {searchText && (
+                            <button
+                                type="button"
+                                onClick={() => setSearchText("")}
+                                aria-label="Clear search"
+                            >
+                                ×
+                            </button>
+                        )}
                     </div>
-                    <div className="">
-                        <select name="category" value={filter.category} onChange={handleFilterChange} className="p-2 border focus:outline-none w-full rounded">
-                            <option value="">All Categories</option>
-                            <option value="Health">Health</option>
-                            <option value="Cooking">Cooking</option>
-                            <option value="Gardening">Gardening</option>
-                            <option value="Sustainability">Sustainability</option>
-                            <option value="Tips">Tips</option>
-                            <option value="Recipes">Recipes</option>
+
+                    <label className="blog-sort-control">
+                        <span>Sort by</span>
+                        <select
+                            value={sortOrder}
+                            onChange={(event) => setSortOrder(event.target.value)}
+                        >
+                            <option value="latest">Latest first</option>
+                            <option value="oldest">Oldest first</option>
                         </select>
-                    </div>
-                    <div className="">
-                        <select name="sort" value={sort} onChange={handleSortChange} className="p-2 border focus:outline-none w-full rounded">
-                            <option value="">Sort by Date</option>
-                            <option value="newest">Newest First</option>
-                            <option value="oldest">Oldest First</option>
-                        </select>
-                    </div>
+                    </label>
                 </div>
 
-
-                {/* Blogs Section */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-                    {sortedBlogs.map((blog) => (
-                        blog && <Blog key={blog._id} blog={blog} />
+                <div className="blog-category-list" aria-label="Blog categories">
+                    {categories.map((category) => (
+                        <button
+                            type="button"
+                            key={category}
+                            className={
+                                selectedCategory === category
+                                    ? "blog-category-button active"
+                                    : "blog-category-button"
+                            }
+                            onClick={() => setSelectedCategory(category)}
+                        >
+                            {category}
+                        </button>
                     ))}
                 </div>
-            </div>
 
-            <Newsletter />
-        </section>
+                {loading && (
+                    <div className="blog-status-box">
+                        <span className="blog-spinner" />
+                        <p>Loading articles...</p>
+                    </div>
+                )}
+
+                {!loading && error && (
+                    <div className="blog-status-box blog-error-box">
+                        <h3>Unable to load articles</h3>
+                        <p>{error}</p>
+                        <button
+                            type="button"
+                            onClick={() => window.location.reload()}
+                            className="blog-retry-button"
+                        >
+                            Try again
+                        </button>
+                    </div>
+                )}
+
+                {!loading && !error && filteredBlogs.length === 0 && (
+                    <div className="blog-status-box blog-empty-box">
+                        <FaRegNewspaper />
+                        <h3>No articles found</h3>
+                        <p>Try another search term or select a different category.</p>
+                        <button
+                            type="button"
+                            className="blog-retry-button"
+                            onClick={() => {
+                                setSearchText("");
+                                setSelectedCategory("All");
+                            }}
+                        >
+                            Clear filters
+                        </button>
+                    </div>
+                )}
+
+                {!loading && !error && filteredBlogs.length > 0 && (
+                    <div className="blog-grid">
+                        {filteredBlogs.map((blog) => (
+                            <Blog key={blog._id} blog={blog} />
+                        ))}
+                    </div>
+                )}
+            </section>
+        </main>
     );
 };
 

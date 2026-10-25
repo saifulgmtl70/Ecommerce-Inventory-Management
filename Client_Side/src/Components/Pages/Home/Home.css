@@ -1,0 +1,1048 @@
+
+/* =====================================================
+   SHOPERY HOME PAGE
+===================================================== */
+
+.shopery-home {
+    --home-primary: #00b307;
+    --home-primary-dark: #008f05;
+    --home-text: #1a1a1a;
+    --home-muted: #6b7280;
+    --home-border: #e7eee7;
+
+    width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+    background: #ffffff;
+    color: var(--home-text);
+    font-family: "Nunito Sans", sans-serif;
+}
+
+.shopery-home *,
+.shopery-home *::before,
+.shopery-home *::after {
+    box-sizing: border-box;
+}
+
+/* =====================================================
+   COMMON CONTAINER
+===================================================== */
+
+.shopery-home .home-container {
+    width: min(1320px, calc(100% - 48px));
+    margin-inline: auto;
+}
+
+/* =====================================================
+   HERO SECTION
+===================================================== */
+
+.shopery-home .home-hero-section {
+    position: relative;
+    width: 100%;
+    isolation: isolate;
+}
+
+/* =====================================================
+   TRUST / SERVICE SECTION
+===================================================== */
+
+.shopery-home .home-trust-wrapper {
+    position: relative;
+    z-index: 1;
+    margin-top: -40px;
+    padding-top: 24px;
+    padding-bottom: 20px;
+}
+
+.shopery-home .home-trust-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    overflow: hidden;
+
+    background: #ffffff;
+    border: 1px solid var(--home-border);
+    border-radius: 18px;
+
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.065);
+    overflow: hidden;
+}
+
+.shopery-home .home-trust-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    min-width: 0;
+    padding: 26px 20px;
+
+    border-right: 1px solid #edf2ed;
+
+    transition: background 0.3s ease;
+}
+
+.shopery-home .home-trust-card:last-child {
+    border-right: none;
+}
+
+.shopery-home .home-trust-card:hover {
+    background: #f7fff7;
+}
+
+.shopery-home .home-trust-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 48px;
+    height: 48px;
+
+    color: var(--home-primary);
+    background: #e8f8e8;
+
+    border-radius: 14px;
+    font-size: 21px;
+}
+
+.shopery-home .home-trust-info {
+    min-width: 0;
+}
+
+.shopery-home .home-trust-info h3 {
+    margin: 0 0 5px;
+
+    color: #202020;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.4;
+}
+
+.shopery-home .home-trust-info p {
+    margin: 0;
+
+    color: #737373;
+    font-size: 12px;
+    line-height: 1.65;
+}
+
+/* =====================================================
+   CHILD COMPONENT SECTION INTEGRATION
+===================================================== */
+
+/*
+   Each child component manages its own:
+   - Container
+   - Heading
+   - Padding
+   - Responsive layout
+
+   Home.css controls section backgrounds only.
+*/
+
+.shopery-home .home-content-section {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+}
+
+.shopery-home .home-category-section {
+    background: #ffffff;
+}
+
+.shopery-home .home-products-section {
+    background: #f8faf8;
+}
+
+.shopery-home .home-promo-section {
+    background: #ffffff;
+}
+
+.shopery-home .home-hotdeal-section {
+    background: #f8faf8;
+}
+
+.shopery-home .home-discount-wrapper {
+    background: #ffffff;
+}
+
+.shopery-home .home-news-section {
+    background: #ffffff;
+}
+
+.shopery-home .home-testimonial-section {
+    background: #f7f9f7;
+}
+
+.shopery-home .home-sponsor-section {
+    background: #ffffff;
+}
+
+.shopery-home .home-follow-section {
+    background: #f8faf8;
+}
+
+/* =====================================================
+   WHY SHOPERY SECTION
+===================================================== */
+
+.shopery-home .home-why-section {
+    position: relative;
+
+    width: 100%;
+    padding: 105px 0;
+
+    overflow: hidden;
+
+    background: linear-gradient(
+        120deg,
+        #f1fbf1 0%,
+        #ffffff 52%,
+        #f5fcf5 100%
+    );
+}
+
+.shopery-home .home-why-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+    align-items: center;
+    gap: 75px;
+}
+
+/* =====================================================
+   WHY SHOPERY TEXT
+===================================================== */
+
+.shopery-home .home-why-text {
+    position: relative;
+    z-index: 2;
+    min-width: 0;
+}
+
+.shopery-home .home-section-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-bottom: 15px;
+
+    color: var(--home-primary);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 1.6px;
+}
+
+.shopery-home .home-section-kicker svg {
+    font-size: 16px;
+}
+
+.shopery-home .home-why-text h2 {
+    max-width: 620px;
+    margin: 0;
+
+    color: #171717;
+    font-size: clamp(35px, 4.5vw, 58px);
+    font-weight: 900;
+    line-height: 1.12;
+    letter-spacing: -1.8px;
+}
+
+.shopery-home .home-why-text h2 span {
+    color: var(--home-primary);
+}
+
+.shopery-home .home-why-description {
+    max-width: 600px;
+    margin: 22px 0 30px;
+
+    color: #666666;
+    font-size: 15px;
+    line-height: 1.9;
+}
+
+/* =====================================================
+   BENEFITS
+===================================================== */
+
+.shopery-home .home-benefit-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    margin-bottom: 34px;
+}
+
+.shopery-home .home-benefit-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+}
+
+.shopery-home .home-benefit-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 27px;
+    height: 27px;
+    margin-top: 1px;
+
+    color: var(--home-primary);
+    font-size: 20px;
+}
+
+.shopery-home .home-benefit-item h3 {
+    margin: 0 0 5px;
+
+    color: #222222;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.shopery-home .home-benefit-item p {
+    max-width: 500px;
+    margin: 0;
+
+    color: #747474;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+/* =====================================================
+   PRIMARY BUTTON
+===================================================== */
+
+.shopery-home .home-primary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 11px;
+
+    min-height: 48px;
+    padding: 14px 24px;
+
+    color: #ffffff;
+    background: var(--home-primary);
+
+    border: 1px solid var(--home-primary);
+    border-radius: 30px;
+
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+
+    box-shadow: 0 9px 24px rgba(0, 179, 7, 0.18);
+
+    transition:
+        background 0.3s ease,
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.shopery-home .home-primary-btn:hover {
+    color: #ffffff;
+    background: var(--home-primary-dark);
+
+    transform: translateY(-2px);
+
+    box-shadow: 0 13px 28px rgba(0, 179, 7, 0.23);
+}
+
+.shopery-home .home-primary-btn svg {
+    transition: transform 0.3s ease;
+}
+
+.shopery-home .home-primary-btn:hover svg {
+    transform: translateX(4px);
+}
+
+/* =====================================================
+   WHY SHOPERY VISUAL
+===================================================== */
+
+.shopery-home .home-why-visual {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 0;
+    min-height: 500px;
+}
+
+.shopery-home .home-visual-main-card {
+    position: relative;
+    z-index: 3;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    width: min(390px, 85%);
+    min-height: 370px;
+    padding: 42px;
+
+    background: linear-gradient(
+        145deg,
+        #ffffff,
+        #effbef
+    );
+
+    border: 1px solid rgba(0, 179, 7, 0.15);
+    border-radius: 32px;
+
+    box-shadow:
+        0 25px 70px rgba(0, 100, 0, 0.1);
+}
+
+.shopery-home .home-visual-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 68px;
+    height: 68px;
+    margin-bottom: 22px;
+
+    color: #ffffff;
+    background: var(--home-primary);
+
+    border-radius: 20px;
+    font-size: 28px;
+
+    box-shadow:
+        0 12px 25px rgba(0, 179, 7, 0.22);
+}
+
+.shopery-home .home-visual-main-card > span {
+    color: #00a706;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+}
+
+.shopery-home .home-visual-main-card h3 {
+    margin: 14px 0;
+
+    color: #171717;
+    font-size: 30px;
+    font-weight: 900;
+    line-height: 1.2;
+}
+
+.shopery-home .home-visual-main-card > p {
+    margin: 0;
+
+    color: #6c6c6c;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.shopery-home .home-visual-card-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-top: 25px;
+    padding-top: 17px;
+
+    color: #288d2d;
+    border-top: 1px solid #dcefdc;
+
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.shopery-home .home-visual-status-dot {
+    display: inline-block;
+    flex-shrink: 0;
+
+    width: 8px;
+    height: 8px;
+
+    background: var(--home-primary);
+    border-radius: 50%;
+}
+
+/* =====================================================
+   FLOATING CARDS
+===================================================== */
+
+.shopery-home .home-floating-card {
+    position: absolute;
+    z-index: 5;
+
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    padding: 14px 18px;
+
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid #e3ece3;
+    border-radius: 14px;
+
+    box-shadow:
+        0 15px 35px rgba(0, 0, 0, 0.09);
+
+    backdrop-filter: blur(10px);
+}
+
+.shopery-home .home-floating-card > svg {
+    flex-shrink: 0;
+
+    color: var(--home-primary);
+    font-size: 21px;
+}
+
+.shopery-home .home-floating-card strong,
+.shopery-home .home-floating-card span {
+    display: block;
+}
+
+.shopery-home .home-floating-card strong {
+    color: #222222;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.shopery-home .home-floating-card span {
+    margin-top: 3px;
+
+    color: #7b7b7b;
+    font-size: 10px;
+}
+
+.shopery-home .home-floating-card-one {
+    top: 75px;
+    right: 0;
+}
+
+.shopery-home .home-floating-card-two {
+    bottom: 75px;
+    left: 0;
+}
+
+/* =====================================================
+   DECORATIVE CIRCLES
+===================================================== */
+
+.shopery-home .home-visual-circle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.shopery-home .home-circle-one {
+    top: 15px;
+    right: 15px;
+
+    width: 210px;
+    height: 210px;
+
+    background: #dff6df;
+}
+
+.shopery-home .home-circle-two {
+    bottom: 20px;
+    left: 30px;
+
+    width: 150px;
+    height: 150px;
+
+    background: #e8f9e8;
+}
+
+/* =====================================================
+   FINAL CTA SECTION
+===================================================== */
+
+.shopery-home .home-final-cta {
+    padding: 0 0 90px;
+    background: #ffffff;
+}
+
+.shopery-home .home-final-cta-inner {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 35px;
+
+    overflow: hidden;
+
+    padding: 55px 65px;
+
+    background: linear-gradient(
+        110deg,
+        #007f05 0%,
+        #00b307 50%,
+        #24c92b 100%
+    );
+
+    border-radius: 28px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 130, 5, 0.2);
+}
+
+.shopery-home .home-final-cta-inner::before {
+    content: "";
+
+    position: absolute;
+    top: -150px;
+    right: -90px;
+
+    width: 300px;
+    height: 300px;
+
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+
+    pointer-events: none;
+}
+
+.shopery-home .home-final-cta-inner::after {
+    content: "";
+
+    position: absolute;
+    bottom: -170px;
+    left: 42%;
+
+    width: 220px;
+    height: 220px;
+
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 50%;
+
+    pointer-events: none;
+}
+
+.shopery-home .home-final-cta-content {
+    position: relative;
+    z-index: 2;
+    min-width: 0;
+}
+
+.shopery-home .home-final-eyebrow {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.6px;
+}
+
+.shopery-home .home-final-cta-inner h2 {
+    margin: 12px 0 14px;
+
+    color: #ffffff;
+    font-size: clamp(28px, 3.5vw, 43px);
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -1px;
+}
+
+.shopery-home .home-final-cta-inner p {
+    max-width: 560px;
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+/* =====================================================
+   FINAL CTA BUTTON
+===================================================== */
+
+.shopery-home .home-final-btn {
+    position: relative;
+    z-index: 3;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 11px;
+
+    flex-shrink: 0;
+
+    min-height: 50px;
+    padding: 15px 25px;
+
+    color: #008f06;
+    background: #ffffff;
+
+    border: 1px solid #ffffff;
+    border-radius: 30px;
+
+    font-size: 14px;
+    font-weight: 900;
+    text-decoration: none;
+
+    transition:
+        background 0.3s ease,
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.shopery-home .home-final-btn:hover {
+    color: #008f06;
+    background: #f1fff1;
+
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 12px 25px rgba(0, 0, 0, 0.14);
+}
+
+.shopery-home .home-final-btn svg {
+    transition: transform 0.3s ease;
+}
+
+.shopery-home .home-final-btn:hover svg {
+    transform: translateX(4px);
+}
+
+/* =====================================================
+   KEYBOARD ACCESSIBILITY
+===================================================== */
+
+.shopery-home .home-primary-btn:focus-visible,
+.shopery-home .home-final-btn:focus-visible {
+    outline: 3px solid #173e19;
+    outline-offset: 4px;
+}
+
+/* =====================================================
+   LARGE TABLET
+===================================================== */
+
+@media (max-width: 1100px) {
+    .shopery-home .home-container {
+        width: min(1000px, calc(100% - 36px));
+    }
+
+    .shopery-home .home-trust-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .shopery-home .home-trust-card:nth-child(2) {
+        border-right: none;
+    }
+
+    .shopery-home .home-trust-card:nth-child(-n + 2) {
+        border-bottom: 1px solid #edf2ed;
+    }
+
+    .shopery-home .home-why-content {
+        gap: 45px;
+    }
+
+    .shopery-home .home-why-visual {
+        min-height: 440px;
+    }
+
+    .shopery-home .home-visual-main-card {
+        min-height: 340px;
+        padding: 34px;
+    }
+
+    .shopery-home .home-visual-main-card h3 {
+        font-size: 27px;
+    }
+}
+
+/* =====================================================
+   TABLET
+===================================================== */
+
+@media (max-width: 900px) {
+    .shopery-home .home-why-content {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .shopery-home .home-why-text {
+        max-width: 680px;
+    }
+
+    .shopery-home .home-why-visual {
+        width: 100%;
+        max-width: 560px;
+        margin: 0 auto;
+    }
+
+    .shopery-home .home-why-section {
+        padding: 80px 0;
+    }
+}
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 767px) {
+    .shopery-home .home-container {
+        width: calc(100% - 28px);
+    }
+
+    /* Trust Section */
+
+    .shopery-home .home-trust-wrapper {
+        margin-top: -18px;
+        padding-bottom: 8px;
+    }
+
+    .shopery-home .home-trust-grid {
+        grid-template-columns: 1fr;
+        border-radius: 14px;
+    }
+
+    .shopery-home .home-trust-card,
+    .shopery-home .home-trust-card:nth-child(2) {
+        padding: 17px 18px;
+        border-right: none;
+        border-bottom: 1px solid #edf2ed;
+    }
+
+    .shopery-home .home-trust-card:last-child {
+        border-bottom: none;
+    }
+
+    .shopery-home .home-trust-icon {
+        width: 43px;
+        height: 43px;
+        font-size: 19px;
+        border-radius: 12px;
+    }
+
+    .shopery-home .home-trust-info h3 {
+        font-size: 13px;
+    }
+
+    .shopery-home .home-trust-info p {
+        font-size: 11px;
+    }
+
+    /* Why Shopery */
+
+    .shopery-home .home-why-section {
+        padding: 65px 0;
+    }
+
+    .shopery-home .home-why-content {
+        gap: 35px;
+    }
+
+    .shopery-home .home-section-kicker {
+        font-size: 10px;
+        letter-spacing: 1.3px;
+    }
+
+    .shopery-home .home-why-text h2 {
+        font-size: 38px;
+        letter-spacing: -1px;
+    }
+
+    .shopery-home .home-why-description {
+        margin: 17px 0 25px;
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    .shopery-home .home-benefit-list {
+        gap: 18px;
+        margin-bottom: 28px;
+    }
+
+    .shopery-home .home-benefit-item h3 {
+        font-size: 14px;
+    }
+
+    .shopery-home .home-benefit-item p {
+        font-size: 12px;
+    }
+
+    .shopery-home .home-primary-btn {
+        min-height: 45px;
+        padding: 12px 20px;
+        font-size: 13px;
+    }
+
+    /* Visual */
+
+    .shopery-home .home-why-visual {
+        min-height: 400px;
+    }
+
+    .shopery-home .home-visual-main-card {
+        width: 82%;
+        min-height: 320px;
+        padding: 30px;
+        border-radius: 24px;
+    }
+
+    .shopery-home .home-visual-icon {
+        width: 56px;
+        height: 56px;
+        margin-bottom: 18px;
+        font-size: 23px;
+        border-radius: 16px;
+    }
+
+    .shopery-home .home-visual-main-card h3 {
+        font-size: 25px;
+    }
+
+    .shopery-home .home-visual-main-card > p {
+        font-size: 12px;
+    }
+
+    .shopery-home .home-floating-card {
+        padding: 10px 12px;
+    }
+
+    .shopery-home .home-floating-card-one {
+        top: 25px;
+        right: 0;
+    }
+
+    .shopery-home .home-floating-card-two {
+        bottom: 25px;
+        left: 0;
+    }
+
+    .shopery-home .home-circle-one {
+        width: 150px;
+        height: 150px;
+    }
+
+    .shopery-home .home-circle-two {
+        width: 105px;
+        height: 105px;
+    }
+
+    /* Final CTA */
+
+    .shopery-home .home-final-cta {
+        padding-bottom: 65px;
+    }
+
+    .shopery-home .home-final-cta-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 25px;
+
+        padding: 38px 28px;
+        border-radius: 22px;
+    }
+
+    .shopery-home .home-final-cta-inner h2 {
+        font-size: 31px;
+    }
+
+    .shopery-home .home-final-cta-inner p {
+        font-size: 13px;
+    }
+
+    .shopery-home .home-final-btn {
+        width: 100%;
+        min-height: 46px;
+        padding: 13px 20px;
+        font-size: 13px;
+    }
+
+    .shopery-home .home-cta-desktop-break {
+        display: none;
+    }
+}
+
+/* =====================================================
+   SMALL MOBILE
+===================================================== */
+
+@media (max-width: 420px) {
+    .shopery-home .home-container {
+        width: calc(100% - 24px);
+    }
+
+    .shopery-home .home-why-text h2 {
+        font-size: 33px;
+    }
+
+    .shopery-home .home-why-visual {
+        min-height: 360px;
+    }
+
+    .shopery-home .home-visual-main-card {
+        width: 86%;
+        min-height: 295px;
+        padding: 24px;
+    }
+
+    .shopery-home .home-visual-icon {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 15px;
+        font-size: 20px;
+    }
+
+    .shopery-home .home-visual-main-card h3 {
+        font-size: 22px;
+    }
+
+    .shopery-home .home-visual-card-footer {
+        margin-top: 18px;
+        font-size: 10px;
+    }
+
+    .shopery-home .home-floating-card {
+        padding: 9px 10px;
+    }
+
+    .shopery-home .home-floating-card strong {
+        font-size: 10px;
+    }
+
+    .shopery-home .home-floating-card span {
+        font-size: 9px;
+    }
+
+    .shopery-home .home-floating-card-one {
+        top: 8px;
+        right: 0;
+    }
+
+    .shopery-home .home-floating-card-two {
+        bottom: 8px;
+        left: 0;
+    }
+
+    .shopery-home .home-final-cta-inner {
+        padding: 32px 22px;
+    }
+
+    .shopery-home .home-final-cta-inner h2 {
+        font-size: 27px;
+    }
+}
+
+/* =====================================================
+   ACCESSIBILITY / REDUCED MOTION
+===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .shopery-home *,
+    .shopery-home *::before,
+    .shopery-home *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

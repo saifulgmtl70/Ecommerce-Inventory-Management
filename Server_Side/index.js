@@ -34,9 +34,13 @@ const client = new MongoClient(uri, {
   }
 });
 
-async function run() {
-  try {
-    await client.connect();
+// async function run() {
+//   try {
+//     await client.connect();
+
+client.connect(() =>{
+    console.log("Connecting to MongoDB")
+}).catch(console.dir)
 
     const usersCollection = client.db('Shopery').collection('users');
     const categoriesCollection = client.db('Shopery').collection('categories');
@@ -53,71 +57,71 @@ async function run() {
 
     // Restore product stock when an order is cancelled.
 // This function must be called inside a MongoDB transaction.
-async function restoreOrderStock(order, session) {
-    // Old orders that did not deduct stock must not restore stock.
-    if (order.stockDeducted !== true || order.stockRestored === true) {
-        return;
-    }
-
-    if (!Array.isArray(order.cart)) {
-        throw new Error('Invalid order cart; stock restoration aborted.');
-    }
-
-    for (const item of order.cart) {
-        const productId = String(item.productId || '');
-        const quantity = Number(item.quantity);
-
-        if (
-            !ObjectId.isValid(productId) ||
-            !Number.isSafeInteger(quantity) ||
-            quantity <= 0
-        ) {
-            throw new Error('Invalid order item; stock restoration aborted.');
+    async function restoreOrderStock(order, session) {
+        // Old orders that did not deduct stock must not restore stock.
+        if (order.stockDeducted !== true || order.stockRestored === true) {
+            return;
         }
 
-        const filter = {
-            _id: new ObjectId(productId)
-        };
+        if (!Array.isArray(order.cart)) {
+            throw new Error('Invalid order cart; stock restoration aborted.');
+        }
 
-        const product = await productsCollection.findOne(
-            filter,
-            { session }
-        );
+        for (const item of order.cart) {
+            const productId = String(item.productId || '');
+            const quantity = Number(item.quantity);
 
-        // Do not silently lose stock if a product was deleted.
-        if (!product) {
-            throw new Error(
-                `Product ${productId} was not found. Stock restoration aborted.`
+            if (
+                !ObjectId.isValid(productId) ||
+                !Number.isSafeInteger(quantity) ||
+                quantity <= 0
+            ) {
+                throw new Error('Invalid order item; stock restoration aborted.');
+            }
+
+            const filter = {
+                _id: new ObjectId(productId)
+            };
+
+            const product = await productsCollection.findOne(
+                filter,
+                { session }
+            );
+
+            // Do not silently lose stock if a product was deleted.
+            if (!product) {
+                throw new Error(
+                    `Product ${productId} was not found. Stock restoration aborted.`
+                );
+            }
+
+            // New stock-managed products must have a valid stock quantity.
+            if (
+                !Number.isSafeInteger(product.stockQuantity) ||
+                product.stockQuantity < 0
+            ) {
+                throw new Error(
+                    `Product "${product.name}" has invalid stock data.`
+                );
+            }
+
+            const newStock = product.stockQuantity + quantity;
+
+            await productsCollection.updateOne(
+                filter,
+                {
+                    $set: {
+                        stockQuantity: newStock,
+                        availability: newStock > 0
+                            ? 'In Stock'
+                            : 'Out of Stock',
+                        updatedAt: new Date()
+                    }
+                },
+                { session }
             );
         }
-
-        // New stock-managed products must have a valid stock quantity.
-        if (
-            !Number.isSafeInteger(product.stockQuantity) ||
-            product.stockQuantity < 0
-        ) {
-            throw new Error(
-                `Product "${product.name}" has invalid stock data.`
-            );
-        }
-
-        const newStock = product.stockQuantity + quantity;
-
-        await productsCollection.updateOne(
-            filter,
-            {
-                $set: {
-                    stockQuantity: newStock,
-                    availability: newStock > 0
-                        ? 'In Stock'
-                        : 'Out of Stock',
-                    updatedAt: new Date()
-                }
-            },
-            { session }
-        );
     }
-}
 
 
 
@@ -669,291 +673,386 @@ async function restoreOrderStock(order, session) {
 
     
 
-    app.get("/blogs/:id/comments", async (req, res) => {
-      const blogId = req.params.id;
-      const query = { blogId: new ObjectId(blogId) };
-      const comments = await commentsCollection.find(query).toArray();
-      res.send(comments);
+   
+// Post a comment on a blog
+    app.post('/blogs/:id/comments', async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { commentText, name, email, photo } = req.body;
+
+            // Validate blog ID
+            if (!ObjectId.isValid(id)) {
+                return res.status(400).send({
+                    success: false,
+                    message: 'Invalid blog ID.'
+                });
+            }
+
+            // Validate required fields
+            if (
+                !commentText ||
+                !commentText.trim() ||
+                !name ||
+                !name.trim() ||
+                !email ||
+                !email.trim()
+            ) {
+                return res.status(400).send({
+                    success: false,
+                    message: 'Comment, name, and email are required.'
+                });
+            }
+
+            // Check whether the blog exists
+            const blog = await blogsCollection.findOne({
+                _id: new ObjectId(id)
+            });
+
+            if (!blog) {
+                return res.status(404).send({
+                    success: false,
+                    message: 'Blog not found.'
+                });
+            }
+
+            // Prepare comment data
+            const newComment = {
+                blogId: new ObjectId(id),
+                commentText: commentText.trim(),
+                name: name.trim(),
+                email: email.trim(),
+                photo: photo || '',
+                createdAt: new Date()
+            };
+
+            // Save comment to MongoDB
+            const result = await commentsCollection.insertOne(newComment);
+
+            return res.status(201).send({
+                success: true,
+                message: 'Comment posted successfully.',
+                insertedId: result.insertedId,
+                comment: {
+                    _id: result.insertedId,
+                    ...newComment
+                }
+            });
+
+        } catch (error) {
+            console.error('Error posting blog comment:', error);
+
+            return res.status(500).send({
+                success: false,
+                message: 'Failed to post comment.'
+            });
+        }
     });
 
-   // Cart APIs
 
-// Add product to cart or update existing product quantity
-app.post('/carts', async (req, res) => {
-    try {
-        const {
-            cartId,
-            email,
-            product,
-            image,
-            price,
-            quantity
-        } = req.body;
-
-        if (!cartId || !email || !product) {
-            return res.status(400).send({
-                message: 'Product ID, email and product name are required.'
-            });
-        }
-
-        if (!ObjectId.isValid(String(cartId))) {
-            return res.status(400).send({
-                message: 'Invalid product ID.'
-            });
-        }
-
-        const requestedQuantity = Number(quantity);
-
-        if (
-            !Number.isSafeInteger(requestedQuantity) ||
-            requestedQuantity <= 0
-        ) {
-            return res.status(400).send({
-                message: 'Quantity must be a positive integer.'
-            });
-        }
-
-        const numericPrice = Number(price);
-
-        if (!Number.isFinite(numericPrice) || numericPrice < 0) {
-            return res.status(400).send({
-                message: 'Invalid product price.'
-            });
-        }
-
-        const productObjectId = new ObjectId(String(cartId));
-
-        // Check that the product exists.
-        const productInfo = await productsCollection.findOne({
-            _id: productObjectId
-        });
-
-        if (!productInfo) {
-            return res.status(404).send({
-                message: 'Product not found.'
-            });
-        }
-
-        // Check available stock when stock tracking is enabled.
-        const hasStock =
-            productInfo.stockQuantity !== undefined &&
-            productInfo.stockQuantity !== null &&
-            productInfo.stockQuantity !== '';
-
-        if (hasStock) {
-            const stock = Number(productInfo.stockQuantity);
-
-            if (!Number.isSafeInteger(stock) || stock < 0) {
-                return res.status(409).send({
-                    message: 'Product stock information is invalid.'
-                });
-            }
-
-            if (
-                productInfo.availability === 'Out of Stock' ||
-                stock < requestedQuantity
-            ) {
-                return res.status(409).send({
-                    message: `Insufficient stock. Available quantity: ${stock}.`
-                });
-            }
-        }
-
-        const filter = {
-            email: email,
-            cartId: {
-                $in: [
-                    String(cartId),
-                    productObjectId
-                ]
-            }
-        };
-
-        const existingItems = await cartsCollection
-            .find(filter)
-            .sort({ _id: 1 })
-            .toArray();
-
-        if (existingItems.length > 0) {
-            const existingQuantity = existingItems.reduce(
-                (total, item) => total + (Number(item.quantity) || 1),
-                0
-            );
-
-            const updatedQuantity =
-                existingQuantity + requestedQuantity;
-
-            if (hasStock && updatedQuantity > Number(productInfo.stockQuantity)) {
-                return res.status(409).send({
-                    message: `Insufficient stock. Available quantity: ${productInfo.stockQuantity}.`
-                });
-            }
-
-            const primaryItem = existingItems[0];
-
-            await cartsCollection.updateOne(
-                { _id: primaryItem._id },
-                {
-                    $set: {
-                        quantity: updatedQuantity,
-                        product: productInfo.name,
-                        image: productInfo.images?.[0] || image || '',
-                        price: Number(productInfo.price),
-                        cartId: String(productObjectId)
-                    }
-                }
-            );
-
-            // Remove any duplicate rows for the same product.
-            if (existingItems.length > 1) {
-                await cartsCollection.deleteMany({
-                    _id: {
-                        $in: existingItems
-                            .slice(1)
-                            .map(item => item._id)
-                    }
-                });
-            }
-
-            return res.status(200).send({
-                success: true,
-                message: 'Cart quantity updated.',
-                updated: true,
-                quantity: updatedQuantity
-            });
-        }
-
-        const cartItem = {
-            cartId: String(productObjectId),
-            email: email,
-            product: productInfo.name,
-            image: productInfo.images?.[0] || image || '',
-            price: Number(productInfo.price),
-            quantity: requestedQuantity,
-            createdAt: new Date()
-        };
-
-        const result = await cartsCollection.insertOne(cartItem);
-
-        return res.status(201).send({
-            success: true,
-            message: 'Product added to cart.',
-            insertedId: result.insertedId
-        });
-
-    } catch (error) {
-        console.error('Add to cart error:', error);
-
-        return res.status(500).send({
-            message: 'Failed to add product to cart.'
-        });
-    }
-});
-
-
-// Get cart items
-app.get('/carts', async (req, res) => {
-    try {
-        const email = req.query.email;
-
-        if (!email) {
-            return res.status(400).send({
-                message: 'Email is required.'
-            });
-        }
-
-        const result = await cartsCollection
-            .find({ email: email })
-            .sort({ createdAt: -1, _id: -1 })
-            .toArray();
-
-        return res.status(200).send(result);
-
-    } catch (error) {
-        console.error('Fetch cart error:', error);
-
-        return res.status(500).send({
-            message: 'Failed to fetch cart items.'
-        });
-    }
-});
-
-
-// Delete one cart item
-app.delete('/carts/:id', async (req, res) => {
+    app.get('/blogs/:id/comments', async (req, res) => {
     try {
         const { id } = req.params;
 
         if (!ObjectId.isValid(id)) {
             return res.status(400).send({
-                message: 'Invalid cart item ID.'
+                message: 'Invalid blog ID'
             });
         }
 
-        const email = req.query.email;
+        const comments = await commentsCollection
+            .find({ blogId: new ObjectId(id) })
+            .sort({ createdAt: -1, _id: -1 })
+            .toArray();
 
-        if (!email) {
-            return res.status(400).send({
-                message: 'Email is required.'
-            });
-        }
-
-        const result = await cartsCollection.deleteOne({
-            _id: new ObjectId(id),
-            email: email
-        });
-
-        if (result.deletedCount === 0) {
-            return res.status(404).send({
-                message: 'Cart item not found.'
-            });
-        }
-
-        return res.status(200).send({
-            success: true,
-            message: 'Cart item deleted successfully.',
-            deletedCount: result.deletedCount
-        });
+        return res.status(200).send(comments);
 
     } catch (error) {
-        console.error('Delete cart item error:', error);
+        console.error('Error fetching blog comments:', error);
 
         return res.status(500).send({
-            message: 'Failed to delete cart item.'
+            message: 'Failed to fetch blog comments'
         });
     }
-});
+    });
 
+   // Cart APIs
 
-// Clear all cart items for a user
-app.delete('/carts', async (req, res) => {
-    try {
-        const email = req.query.email;
+    // Add product to cart or update existing product quantity
+    app.post('/carts', async (req, res) => {
+        try {
+            const {
+                cartId,
+                email,
+                product,
+                image,
+                price,
+                quantity
+            } = req.body;
 
-        if (!email) {
-            return res.status(400).send({
-                message: 'Email is required.'
+            if (!cartId || !email || !product) {
+                return res.status(400).send({
+                    message: 'Product ID, email and product name are required.'
+                });
+            }
+
+            if (!ObjectId.isValid(String(cartId))) {
+                return res.status(400).send({
+                    message: 'Invalid product ID.'
+                });
+            }
+
+            const requestedQuantity = Number(quantity);
+
+            if (
+                !Number.isSafeInteger(requestedQuantity) ||
+                requestedQuantity <= 0
+            ) {
+                return res.status(400).send({
+                    message: 'Quantity must be a positive integer.'
+                });
+            }
+
+            const numericPrice = Number(price);
+
+            if (!Number.isFinite(numericPrice) || numericPrice < 0) {
+                return res.status(400).send({
+                    message: 'Invalid product price.'
+                });
+            }
+
+            const productObjectId = new ObjectId(String(cartId));
+
+            // Check that the product exists.
+            const productInfo = await productsCollection.findOne({
+                _id: productObjectId
+            });
+
+            if (!productInfo) {
+                return res.status(404).send({
+                    message: 'Product not found.'
+                });
+            }
+
+            // Check available stock when stock tracking is enabled.
+            const hasStock =
+                productInfo.stockQuantity !== undefined &&
+                productInfo.stockQuantity !== null &&
+                productInfo.stockQuantity !== '';
+
+            if (hasStock) {
+                const stock = Number(productInfo.stockQuantity);
+
+                if (!Number.isSafeInteger(stock) || stock < 0) {
+                    return res.status(409).send({
+                        message: 'Product stock information is invalid.'
+                    });
+                }
+
+                if (
+                    productInfo.availability === 'Out of Stock' ||
+                    stock < requestedQuantity
+                ) {
+                    return res.status(409).send({
+                        message: `Insufficient stock. Available quantity: ${stock}.`
+                    });
+                }
+            }
+
+            const filter = {
+                email: email,
+                cartId: {
+                    $in: [
+                        String(cartId),
+                        productObjectId
+                    ]
+                }
+            };
+
+            const existingItems = await cartsCollection
+                .find(filter)
+                .sort({ _id: 1 })
+                .toArray();
+
+            if (existingItems.length > 0) {
+                const existingQuantity = existingItems.reduce(
+                    (total, item) => total + (Number(item.quantity) || 1),
+                    0
+                );
+
+                const updatedQuantity =
+                    existingQuantity + requestedQuantity;
+
+                if (hasStock && updatedQuantity > Number(productInfo.stockQuantity)) {
+                    return res.status(409).send({
+                        message: `Insufficient stock. Available quantity: ${productInfo.stockQuantity}.`
+                    });
+                }
+
+                const primaryItem = existingItems[0];
+
+                await cartsCollection.updateOne(
+                    { _id: primaryItem._id },
+                    {
+                        $set: {
+                            quantity: updatedQuantity,
+                            product: productInfo.name,
+                            image: productInfo.images?.[0] || image || '',
+                            price: Number(productInfo.price),
+                            cartId: String(productObjectId)
+                        }
+                    }
+                );
+
+                // Remove any duplicate rows for the same product.
+                if (existingItems.length > 1) {
+                    await cartsCollection.deleteMany({
+                        _id: {
+                            $in: existingItems
+                                .slice(1)
+                                .map(item => item._id)
+                        }
+                    });
+                }
+
+                return res.status(200).send({
+                    success: true,
+                    message: 'Cart quantity updated.',
+                    updated: true,
+                    quantity: updatedQuantity
+                });
+            }
+
+            const cartItem = {
+                cartId: String(productObjectId),
+                email: email,
+                product: productInfo.name,
+                image: productInfo.images?.[0] || image || '',
+                price: Number(productInfo.price),
+                quantity: requestedQuantity,
+                createdAt: new Date()
+            };
+
+            const result = await cartsCollection.insertOne(cartItem);
+
+            return res.status(201).send({
+                success: true,
+                message: 'Product added to cart.',
+                insertedId: result.insertedId
+            });
+
+        } catch (error) {
+            console.error('Add to cart error:', error);
+
+            return res.status(500).send({
+                message: 'Failed to add product to cart.'
             });
         }
+    });
 
-        const result = await cartsCollection.deleteMany({
-            email: email
-        });
 
-        return res.status(200).send({
-            success: true,
-            message: 'Cart cleared successfully.',
-            deletedCount: result.deletedCount
-        });
+    // Get cart items
+    app.get('/carts', async (req, res) => {
+        try {
+            const email = req.query.email;
 
-    } catch (error) {
-        console.error('Clear cart error:', error);
+            if (!email) {
+                return res.status(400).send({
+                    message: 'Email is required.'
+                });
+            }
 
-        return res.status(500).send({
-            message: 'Failed to clear cart.'
-        });
-    }
-});
+            const result = await cartsCollection
+                .find({ email: email })
+                .sort({ createdAt: -1, _id: -1 })
+                .toArray();
+
+            return res.status(200).send(result);
+
+        } catch (error) {
+            console.error('Fetch cart error:', error);
+
+            return res.status(500).send({
+                message: 'Failed to fetch cart items.'
+            });
+        }
+    });
+
+
+    // Delete one cart item
+    app.delete('/carts/:id', async (req, res) => {
+        try {
+            const { id } = req.params;
+
+            if (!ObjectId.isValid(id)) {
+                return res.status(400).send({
+                    message: 'Invalid cart item ID.'
+                });
+            }
+
+            const email = req.query.email;
+
+            if (!email) {
+                return res.status(400).send({
+                    message: 'Email is required.'
+                });
+            }
+
+            const result = await cartsCollection.deleteOne({
+                _id: new ObjectId(id),
+                email: email
+            });
+
+            if (result.deletedCount === 0) {
+                return res.status(404).send({
+                    message: 'Cart item not found.'
+                });
+            }
+
+            return res.status(200).send({
+                success: true,
+                message: 'Cart item deleted successfully.',
+                deletedCount: result.deletedCount
+            });
+
+        } catch (error) {
+            console.error('Delete cart item error:', error);
+
+            return res.status(500).send({
+                message: 'Failed to delete cart item.'
+            });
+        }
+    });
+
+
+    // Clear all cart items for a user
+    app.delete('/carts', async (req, res) => {
+        try {
+            const email = req.query.email;
+
+            if (!email) {
+                return res.status(400).send({
+                    message: 'Email is required.'
+                });
+            }
+
+            const result = await cartsCollection.deleteMany({
+                email: email
+            });
+
+            return res.status(200).send({
+                success: true,
+                message: 'Cart cleared successfully.',
+                deletedCount: result.deletedCount
+            });
+
+        } catch (error) {
+            console.error('Clear cart error:', error);
+
+            return res.status(500).send({
+                message: 'Failed to clear cart.'
+            });
+        }
+    });
 
     // Wishlist APIs
     app.post('/wishlist', async (req, res) => {
@@ -1306,6 +1405,98 @@ app.delete('/carts', async (req, res) => {
 
             res.status(500).send({
                 message: "Failed to fetch orders"
+            });
+        }
+    });
+
+
+    // Update order status from Admin Dashboard
+    app.patch('/orders/:id/status', verifyToken, verifyAdmin, async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { status } = req.body;
+
+            if (!ObjectId.isValid(id)) {
+                return res.status(400).send({
+                    message: 'Invalid order ID'
+                });
+            }
+
+            const allowedStatuses = [
+                'pending',
+                'confirmed',
+                'processing',
+                'packed',
+                'shipped',
+                'out_for_delivery',
+                'delivered',
+                'cancelled'
+            ];
+
+            if (!allowedStatuses.includes(status)) {
+                return res.status(400).send({
+                    message: 'Invalid order status'
+                });
+            }
+
+            const order = await ordersCollection.findOne({
+                _id: new ObjectId(id)
+            });
+
+            if (!order) {
+                return res.status(404).send({
+                    message: 'Order not found'
+                });
+            }
+
+            if (
+                order.status === 'delivered' ||
+                order.status === 'cancelled'
+            ) {
+                return res.status(409).send({
+                    message: `Cannot update an order with status "${order.status}"`
+                });
+            }
+
+            const now = new Date();
+
+            const result = await ordersCollection.updateOne(
+                {
+                    _id: new ObjectId(id),
+                    status: order.status
+                },
+                {
+                    $set: {
+                        status,
+                        updatedAt: now
+                    },
+                    $push: {
+                        statusHistory: {
+                            status,
+                            changedAt: now,
+                            changedBy: req.decoded.email
+                        }
+                    }
+                }
+            );
+
+            if (result.matchedCount === 0) {
+                return res.status(409).send({
+                    message: 'Order status changed. Please refresh and try again.'
+                });
+            }
+
+            return res.status(200).send({
+                success: true,
+                message: 'Order status updated successfully',
+                status
+            });
+
+        } catch (error) {
+            console.error('Admin order status update error:', error);
+
+            return res.status(500).send({
+                message: 'Failed to update order status'
             });
         }
     });
@@ -1772,6 +1963,62 @@ app.delete('/carts', async (req, res) => {
       res.send(result);
     });
 
+        // ==========================================
+    // BLOGS RELATED APIs
+    // ==========================================
+
+    // Get all blogs
+    app.get('/blogs', async (req, res) => {
+        try {
+            const blogs = await blogsCollection
+                .find()
+                .sort({ _id: -1 })
+                .toArray();
+
+            return res.status(200).send(blogs);
+
+        } catch (error) {
+            console.error('Error fetching blogs:', error);
+
+            return res.status(500).send({
+                message: 'Failed to fetch blogs'
+            });
+        }
+    });
+
+
+    // Get a single blog by ID
+    app.get('/blogs/:id', async (req, res) => {
+        try {
+            const { id } = req.params;
+
+            if (!ObjectId.isValid(id)) {
+                return res.status(400).send({
+                    message: 'Invalid blog ID'
+                });
+            }
+
+            const blog = await blogsCollection.findOne({
+                _id: new ObjectId(id)
+            });
+
+            if (!blog) {
+                return res.status(404).send({
+                    message: 'Blog not found'
+                });
+            }
+
+            return res.status(200).send(blog);
+
+        } catch (error) {
+            console.error('Error fetching blog:', error);
+
+            return res.status(500).send({
+                message: 'Failed to fetch blog'
+            });
+        }
+    });
+
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     app.get("/", (req, res) => {
@@ -1781,9 +2028,11 @@ app.delete('/carts', async (req, res) => {
     app.listen(port, () => {
       console.log(`Shopery is running on port ${port}`);
     });
-  } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
-  }
-}
-run().catch(console.dir);
+//   } finally {
+//     // Ensures that the client will close when you finish/error
+//     // await client.close();
+//   }
+// }
+// run().catch(console.dir);
+
+module.exports = app;

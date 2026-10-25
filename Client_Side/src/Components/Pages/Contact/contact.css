@@ -1,0 +1,397 @@
+/* ==========================================
+   SHOPERY CONTACT PAGE
+========================================== */
+
+.shopery-contact {
+    width: 100%;
+    overflow-x: clip;
+    color: #172b1b;
+}
+
+/* ==========================================
+   HERO SECTION
+========================================== */
+
+.contact-hero {
+    background: linear-gradient(
+        135deg,
+        #f0faf0 0%,
+        #ffffff 48%,
+        #eaf8e9 100%
+    );
+}
+
+.contact-hero-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(65px);
+    pointer-events: none;
+}
+
+.contact-hero-glow-one {
+    width: 350px;
+    height: 350px;
+    top: -120px;
+    left: -130px;
+    background: rgba(0, 178, 7, 0.09);
+}
+
+.contact-hero-glow-two {
+    width: 400px;
+    height: 400px;
+    bottom: -170px;
+    right: -130px;
+    background: rgba(0, 178, 7, 0.08);
+}
+
+/* ==========================================
+   BADGE
+========================================== */
+
+.contact-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    padding: 10px 17px;
+
+    border: 1px solid #cceccc;
+    border-radius: 100px;
+
+    background: rgba(255, 255, 255, 0.85);
+    color: #008a05;
+
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+
+    box-shadow: 0 5px 20px rgba(0, 100, 20, 0.04);
+}
+
+.contact-gradient-text {
+    background: linear-gradient(
+        100deg,
+        #00b207,
+        #008c06,
+        #37c844
+    );
+
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    -webkit-text-fill-color: transparent;
+}
+
+/* ==========================================
+   SECTION HEADINGS
+========================================== */
+
+.contact-section-label {
+    color: #00a206;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    line-height: 1.6;
+}
+
+.contact-section-title {
+    color: #172b1b;
+
+    font-size: clamp(30px, 4vw, 50px);
+
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -1px;
+}
+
+/* ==========================================
+   BUTTONS
+========================================== */
+
+.contact-primary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    padding: 16px 30px;
+
+    border: none;
+    border-radius: 100px;
+
+    background: #00b207;
+    color: white;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    text-decoration: none;
+    cursor: pointer;
+
+    box-shadow: 0 12px 30px rgba(0, 178, 7, 0.18);
+
+    transition: all 0.3s ease;
+}
+
+.contact-primary-btn:hover {
+    background: #008f05;
+    color: white;
+
+    transform: translateY(-3px);
+
+    box-shadow: 0 16px 35px rgba(0, 178, 7, 0.24);
+}
+
+/* ==========================================
+   CONTACT INFO CARDS
+========================================== */
+
+.contact-info-card {
+    position: relative;
+
+    padding: 35px 28px;
+
+    border: 1px solid #edf1ed;
+    border-radius: 24px;
+
+    background: white;
+
+    text-align: center;
+
+    transition: all 0.35s ease;
+
+    overflow: hidden;
+}
+
+.contact-info-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 0;
+    height: 3px;
+
+    background: #00b207;
+
+    transition: width 0.4s ease;
+}
+
+.contact-info-card:hover::before {
+    width: 100%;
+}
+
+.contact-info-card:hover {
+    transform: translateY(-6px);
+
+    border-color: #cceccc;
+
+    box-shadow: 0 20px 45px rgba(0, 100, 20, 0.08);
+}
+
+.contact-info-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 70px;
+    height: 70px;
+
+    margin: 0 auto 25px;
+
+    border-radius: 20px;
+
+    background: #eaf8ea;
+    color: #00b207;
+
+    transition: all 0.35s ease;
+}
+
+.contact-info-card:hover .contact-info-icon {
+    background: #00b207;
+    color: white;
+
+    transform: rotate(-5deg);
+}
+
+/* ==========================================
+   CONTACT FORM
+========================================== */
+
+.contact-form-card {
+    padding: 35px;
+
+    border: 1px solid #e7efe7;
+    border-radius: 26px;
+
+    background: white;
+
+    box-shadow: 0 15px 50px rgba(0, 80, 20, 0.05);
+}
+
+.contact-label {
+    display: block;
+
+    margin-bottom: 10px;
+
+    color: #263b2a;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.contact-input {
+    display: block;
+
+    width: 100%;
+
+    padding: 14px 17px;
+
+    border: 1px solid #e0e8e0;
+    border-radius: 12px;
+
+    background: #ffffff;
+    color: #172b1b;
+
+    font-size: 14px;
+
+    outline: none;
+
+    transition: all 0.3s ease;
+}
+
+.contact-input::placeholder {
+    color: #9ca3af;
+}
+
+.contact-input:focus {
+    border-color: #00b207;
+
+    box-shadow: 0 0 0 4px rgba(0, 178, 7, 0.08);
+}
+
+/* ==========================================
+   CONTACT BENEFITS
+========================================== */
+
+.contact-benefit-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 46px;
+    height: 46px;
+
+    flex-shrink: 0;
+
+    border-radius: 14px;
+
+    background: #e6f7e6;
+    color: #00b207;
+}
+
+/* ==========================================
+   MAP
+========================================== */
+
+.contact-map-wrapper {
+    overflow: hidden;
+
+    border: 1px solid #e2eee2;
+    border-radius: 26px;
+
+    background: #f1f7f1;
+
+    box-shadow: 0 15px 45px rgba(0, 80, 20, 0.07);
+}
+
+.contact-map-frame {
+    display: block;
+
+    width: 100%;
+    height: 450px;
+
+    border: none;
+}
+
+/* ==========================================
+   TABLET RESPONSIVE
+========================================== */
+
+@media (max-width: 1023px) {
+
+    .contact-section-title {
+        font-size: clamp(30px, 5vw, 42px);
+    }
+
+    .contact-form-card {
+        padding: 28px;
+    }
+
+}
+
+/* ==========================================
+   MOBILE RESPONSIVE
+========================================== */
+
+@media (max-width: 639px) {
+
+    .contact-badge {
+        padding: 9px 13px;
+
+        font-size: 10px;
+        letter-spacing: 0.8px;
+    }
+
+    .contact-section-label {
+        font-size: 11px;
+        letter-spacing: 1.5px;
+    }
+
+    .contact-section-title {
+        font-size: 30px;
+        line-height: 1.25;
+    }
+
+    .contact-primary-btn {
+        width: 100%;
+        padding: 15px 22px;
+    }
+
+    .contact-info-card {
+        padding: 28px 22px;
+        border-radius: 20px;
+    }
+
+    .contact-form-card {
+        padding: 24px 18px;
+        border-radius: 20px;
+    }
+
+    .contact-map-frame {
+        height: 320px;
+    }
+
+    .contact-map-wrapper {
+        border-radius: 18px;
+    }
+
+}
+
+/* ==========================================
+   ACCESSIBILITY
+========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .shopery-contact *,
+    .shopery-contact *::before,
+    .shopery-contact *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+
+}

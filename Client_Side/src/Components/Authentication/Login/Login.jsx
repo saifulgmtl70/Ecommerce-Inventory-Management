@@ -6,7 +6,7 @@ import useAuth from '../../Hooks/useAuth';
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Newsletter from '../../Pages/Shop/Products/Newsletter';
+//import Newsletter from '../../Pages/Shop/Products/Newsletter';
 
 import { Helmet } from 'react-helmet-async';
 
@@ -90,7 +90,7 @@ const Login = () => {
             </div>
             </div>
 
-            <Newsletter/>
+         
 
         </>
     );

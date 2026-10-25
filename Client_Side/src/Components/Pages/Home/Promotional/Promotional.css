@@ -1,23 +1,390 @@
-.prom_1{
-    background: url(https://i.ibb.co/tHfHmmt/Rectangle-54.png);
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
+/* =========================================
+   SHOPERY PROMOTIONAL SECTION
+========================================= */
 
+.promotional-section {
+    width: 100%;
+    padding: 32px 20px 48px;
+    overflow: hidden;
 }
 
-.prom_2{
-    background: url(https://i.ibb.co/qn5JkPJ/Rectangle-54-1.png);
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
+.promotional-container {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
 
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
 }
 
-.prom_3{
-    background: url(https://i.ibb.co/dkqNGsQ/Rectangle-54-2.png);
+/* Promotional Cards */
+
+.promotional-card {
+    position: relative;
+    isolation: isolate;
+    min-width: 0;
+    min-height: 420px;
+    overflow: hidden;
+    border-radius: 16px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+
+    background-color: #e8eee8;
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
 
+    box-shadow: 0 8px 24px rgba(20, 40, 20, 0.07);
+
+    transition:
+        transform 0.35s ease,
+        box-shadow 0.35s ease;
+}
+
+.promotional-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 36px rgba(20, 40, 20, 0.14);
+}
+
+/* Existing Background Images */
+
+.promotional-card.prom_1 {
+    background-image: url("https://i.ibb.co/tHfHmmt/Rectangle-54.png");
+}
+
+.promotional-card.prom_2 {
+    background-image: url("https://i.ibb.co/qn5JkPJ/Rectangle-54-1.png");
+}
+
+.promotional-card.prom_3 {
+    background-image: url("https://i.ibb.co/dkqNGsQ/Rectangle-54-2.png");
+}
+
+/* Image Overlay */
+
+.promotional-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+
+    background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.12) 0%,
+        rgba(0, 0, 0, 0.05) 35%,
+        rgba(0, 0, 0, 0.32) 100%
+    );
+
+    transition: background 0.35s ease;
+}
+
+.promotional-card:hover .promotional-overlay {
+    background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.2) 0%,
+        rgba(0, 0, 0, 0.08) 35%,
+        rgba(0, 0, 0, 0.4) 100%
+    );
+}
+
+/* Card Content */
+
+.promotional-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    padding: 38px 22px 30px;
+    text-align: center;
+}
+
+.promotional-content-light {
+    color: #ffffff;
+}
+
+.promotional-content-dark {
+    color: #172117;
+}
+
+.promotional-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    margin-bottom: 16px;
+    padding: 8px 14px;
+
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(8px);
+}
+
+.promotional-content-dark .promotional-label {
+    background: rgba(255, 255, 255, 0.78);
+    border-color: rgba(255, 255, 255, 0.9);
+}
+
+.promotional-content h2 {
+    margin: 0 0 14px;
+    font-size: clamp(25px, 2vw, 34px);
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: -0.7px;
+}
+
+.promotional-description {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.7;
+    font-weight: 500;
+}
+
+.prom-price {
+    color: #ffdb66;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.prom-discount {
+    display: inline-block;
+    margin-left: 5px;
+    padding: 5px 10px;
+
+    border-radius: 6px;
+    background: #172117;
+    color: #ffdc66;
+
+    font-size: 14px;
+    font-weight: 800;
+}
+
+/* Countdown */
+
+.promotional-countdown {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 28px 0;
+}
+
+.countdown-item {
+    min-width: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.countdown-number {
+    font-size: 27px;
+    line-height: 1;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.countdown-label {
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.countdown-separator {
+    margin-top: -12px;
+    font-size: 22px;
+    font-weight: 700;
+    opacity: 0.8;
+}
+
+/* Buttons */
+
+.promotional-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    margin-top: 26px;
+    padding: 13px 25px;
+
+    border: 2px solid #ffffff;
+    border-radius: 50px;
+    background: #ffffff;
+    color: #00852b;
+
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
+
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+
+    transition:
+        background 0.25s ease,
+        color 0.25s ease,
+        border-color 0.25s ease,
+        transform 0.25s ease;
+}
+
+.promotional-button svg {
+    font-size: 22px;
+    transition: transform 0.25s ease;
+}
+
+.promotional-button:hover {
+    background: #00852b;
+    border-color: #00852b;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.promotional-button:hover svg {
+    transform: translateX(4px);
+}
+
+.promotional-button:focus-visible {
+    outline: 3px solid #ffdc66;
+    outline-offset: 4px;
+}
+
+/* =========================================
+   RESPONSIVE DESIGN
+========================================= */
+
+/* Small desktop and tablets */
+
+@media (max-width: 1100px) {
+    .promotional-container {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .promotional-card {
+        min-height: 390px;
+    }
+
+    .promotional-card:first-child {
+        grid-column: 1 / -1;
+        min-height: 370px;
+    }
+
+    .promotional-card:first-child .promotional-content {
+        max-width: 560px;
+        margin: 0 auto;
+    }
+
+    .promotional-content h2 {
+        font-size: 30px;
+    }
+}
+
+/* Mobile */
+
+@media (max-width: 640px) {
+    .promotional-section {
+        padding: 22px 16px 35px;
+    }
+
+    .promotional-container {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 18px;
+    }
+
+    .promotional-card,
+    .promotional-card:first-child {
+        grid-column: auto;
+        min-height: 350px;
+        border-radius: 13px;
+    }
+
+    .promotional-content {
+        padding: 32px 18px 26px;
+    }
+
+    .promotional-content h2 {
+        font-size: 27px;
+    }
+
+    .promotional-description {
+        font-size: 14px;
+    }
+
+    .promotional-countdown {
+        gap: 8px;
+        margin: 24px 0;
+    }
+
+    .countdown-item {
+        min-width: 40px;
+    }
+
+    .countdown-number {
+        font-size: 24px;
+    }
+
+    .countdown-label {
+        font-size: 10px;
+    }
+
+    .countdown-separator {
+        font-size: 18px;
+    }
+
+    .promotional-button {
+        margin-top: 22px;
+        padding: 12px 22px;
+        font-size: 13px;
+    }
+}
+
+/* Extra-small phones */
+
+@media (max-width: 360px) {
+    .promotional-section {
+        padding-right: 12px;
+        padding-left: 12px;
+    }
+
+    .promotional-content {
+        padding-right: 12px;
+        padding-left: 12px;
+    }
+
+    .promotional-content h2 {
+        font-size: 24px;
+    }
+
+    .promotional-countdown {
+        gap: 5px;
+    }
+
+    .countdown-item {
+        min-width: 36px;
+    }
+
+    .countdown-number {
+        font-size: 21px;
+    }
+
+    .promotional-button {
+        padding: 11px 19px;
+    }
+}
+
+/* Reduced motion accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+    .promotional-card,
+    .promotional-button,
+    .promotional-button svg,
+    .promotional-overlay {
+        transition: none;
+    }
 }

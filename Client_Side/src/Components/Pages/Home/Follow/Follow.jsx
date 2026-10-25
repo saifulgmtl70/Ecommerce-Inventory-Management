@@ -1,120 +1,118 @@
-import { Link } from "react-router-dom";
+
+import React from "react";
 import { FaInstagram } from "react-icons/fa";
-import './follow.css';
+import { FaArrowRight } from "react-icons/fa6";
+
+import "./follow.css";
+
+const instagramPosts = [
+    {
+        id: 1,
+        image: "https://i.ibb.co/80P8Mcp/01.png",
+        alt: "Shopery Instagram gallery image 1",
+    },
+    {
+        id: 2,
+        image: "https://i.ibb.co/KbJ05Jy/02.png",
+        alt: "Shopery Instagram gallery image 2",
+    },
+    {
+        id: 3,
+        image: "https://i.ibb.co/pPcwFZ8/03.png",
+        alt: "Shopery Instagram gallery image 3",
+    },
+    {
+        id: 4,
+        image: "https://i.ibb.co/4JH2jwm/04.png",
+        alt: "Shopery Instagram gallery image 4",
+    },
+    {
+        id: 5,
+        image: "https://i.ibb.co/1nQssFH/05.png",
+        alt: "Shopery Instagram gallery image 5",
+    },
+];
+
+const INSTAGRAM_URL = "https://www.instagram.com/";
+
 const Follow = () => {
     return (
-        <div className="px-4 lg:px-10 py-10 nunito_sans">
-            <div className="text-center mb-10">
-                <h2 className="text-[#111] text-[30px] font-bold">Follow us on Instagram</h2>
+        <section className="shopery-follow-section">
+            <div className="shopery-follow-container">
+
+                {/* Section Heading */}
+
+                <div className="shopery-follow-heading">
+                    <span className="shopery-follow-subtitle">
+                        JOIN OUR COMMUNITY
+                    </span>
+
+                    <h2>
+                        Follow Us on <span>Instagram</span>
+                    </h2>
+
+                    <p>
+                        Stay inspired with fresh finds, exciting
+                        updates, and moments from Shopery.
+                    </p>
+                </div>
+
+                {/* Instagram Gallery */}
+
+                <div className="shopery-instagram-grid">
+                    {instagramPosts.map((post, index) => (
+                        <div
+                            key={post.id}
+                            className="shopery-instagram-card"
+                            data-aos="zoom-in"
+                            data-aos-delay={index * 70}
+                            data-aos-duration="700"
+                        >
+                            <img
+                                src={post.image}
+                                alt={post.alt}
+                                className="shopery-instagram-image"
+                                loading="lazy"
+                            />
+
+                            <div className="shopery-instagram-overlay">
+                                <a
+                                    href={INSTAGRAM_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="shopery-instagram-icon"
+                                    aria-label="Visit Instagram"
+                                >
+                                    <FaInstagram />
+                                </a>
+
+                                <span className="shopery-instagram-overlay-text">
+                                    Follow Shopery
+                                </span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Follow Button */}
+
+                <div className="shopery-follow-bottom">
+                    <a
+                        href={INSTAGRAM_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="shopery-follow-button"
+                    >
+                        <FaInstagram />
+
+                        <span>Follow on Instagram</span>
+
+                        <FaArrowRight className="shopery-follow-button-arrow" />
+                    </a>
+                </div>
+
             </div>
-
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-5 lg:gap-8">
-                
-
-                <div className="h-auto w-auto border hover:shadow-lg rounded-[4px] "
-                 data-aos="zoom-in"
-                 data-aos-delay="50"
-                 data-aos-duration="1000"
-                 data-aos-easing="ease-in-out">
-                    <div className="container">
-                        <img src="https://i.ibb.co/80P8Mcp/01.png" alt="Avatar" className="image" />
-                        <div className="overlay">
-                            <div className="social_icon flex items-center justify-center">
-                                
-                                <div className='text-[20px] text-[#fff]  font-bold rounded-full transition-all delay-200 p-3 hover:bg-[#00B307] hover:text-[#fff] cursor-pointer'>
-                                    <FaInstagram  />
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                    
-                </div>
-
-                <div className="h-auto w-auto border hover:shadow-lg rounded-[4px] "
-                 data-aos="zoom-in"
-                 data-aos-delay="50"
-                 data-aos-duration="1000"
-                 data-aos-easing="ease-in-out">
-                    <div className="container">
-                        <img src="https://i.ibb.co/KbJ05Jy/02.png" alt="Avatar" className="image" />
-                        <div className="overlay">
-                            <div className="social_icon flex items-center justify-center">
-                                
-                                <div className='text-[20px] text-[#fff]  font-bold rounded-full transition-all delay-200 p-3 hover:bg-[#00B307] hover:text-[#fff] cursor-pointer'>
-                                    <FaInstagram  />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                  
-                </div>
-
-                
-                <div className="h-auto w-auto border hover:shadow-lg rounded-[4px] "
-                 data-aos="zoom-in"
-                 data-aos-delay="50"
-                 data-aos-duration="1000"
-                 data-aos-easing="ease-in-out">
-                    <div className="container">
-                        <img src="https://i.ibb.co/pPcwFZ8/03.png" alt="Avatar" className="image" />
-                        <div className="overlay">
-                            <div className="social_icon flex items-center justify-center">
-                                
-                                <div className='text-[20px] text-[#fff]  font-bold rounded-full transition-all delay-200 p-3 hover:bg-[#00B307] hover:text-[#fff] cursor-pointer'>
-                                    <FaInstagram  />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                </div>
-
-                
-                <div className="h-auto w-auto border hover:shadow-lg rounded-[4px] "
-                 data-aos="zoom-in"
-                 data-aos-delay="50"
-                 data-aos-duration="1000"
-                 data-aos-easing="ease-in-out">
-                    <div className="container">
-                        <img src="https://i.ibb.co/4JH2jwm/04.png" alt="Avatar" className="image" />
-                        <div className="overlay">
-                            <div className="social_icon flex items-center justify-center">
-                                
-                                <div className='text-[20px] text-[#fff]  font-bold rounded-full transition-all delay-200 p-3 hover:bg-[#00B307] hover:text-[#fff] cursor-pointer'>
-                                    <FaInstagram  />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                   
-                </div>
-                
-
-                
-                <div className="h-auto w-auto border hover:shadow-lg rounded-[4px] "
-                 data-aos="zoom-in"
-                 data-aos-delay="50"
-                 data-aos-duration="1000"
-                 data-aos-easing="ease-in-out">
-                    <div className="container">
-                        <img src="https://i.ibb.co/1nQssFH/05.png" alt="Avatar" className="image" />
-                        <div className="overlay">
-                            <div className="social_icon flex items-center justify-center">
-                                
-                                <div className='text-[20px] text-[#fff]  font-bold rounded-full transition-all delay-200 p-3 hover:bg-[#00B307] hover:text-[#fff] cursor-pointer'>
-                                    <FaInstagram  />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                   
-                </div>
-                
-            </div>
-
-
-        </div>
+        </section>
     );
 };
 

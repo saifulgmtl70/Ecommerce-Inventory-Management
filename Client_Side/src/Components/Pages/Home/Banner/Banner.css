@@ -1,119 +1,905 @@
-.banner-container {
-    width: 100%;
-    background-color: #f5f5f5;
-}
+/* =========================================================
+   SHOPERY PREMIUM HERO BANNER
+   ========================================================= */
 
-.banner-slide-background {
+.shopery-banner {
     position: relative;
     width: 100%;
-    height: 100%;
+    overflow: hidden;
+    background: #f0f8ef;
+    isolation: isolate;
 }
 
-.banner-slide-background::before {
-    content: '';
-    position: absolute;
-    background-image: url('https://i.ibb.co/6Dg7Gfc/Vector-1.png'), 
-                      url('https://i.ibb.co/NZyDvJw/Vector-2.png'),
-                      url('https://i.ibb.co/dtk0FGf/Vector-3.png'),
-                      url('https://i.ibb.co/Jv5hXn9/Vector-4.png'),
-                      url('https://i.ibb.co/HHZS25V/Vector.png');
-    background-position: top left, bottom left, top right, bottom right, center;
-    background-repeat: no-repeat;
+.shopery-banner-swiper {
     width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    z-index: -1;
+    height: 660px;
 }
 
-.banner-image-container {
-    width: 100%;
-    max-width: 600px;
+.shopery-banner .swiper-slide {
+    height: auto;
+}
+
+
+/* =========================================================
+   SLIDE BACKGROUND
+   ========================================================= */
+
+.shopery-banner-slide {
+    position: relative;
+    min-height: 660px;
+    height: 100%;
     display: flex;
-    justify-content: center;
     align-items: center;
     overflow: hidden;
+    background: #eaf6e9;
 }
 
-.banner-image {
+.shopery-banner-image {
+    position: absolute;
+    inset: 0;
+    z-index: -3;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    transform: scale(1.02);
+    transition: transform 6s ease;
+}
+
+.shopery-banner .swiper-slide-active .shopery-banner-image {
+    transform: scale(1.08);
+}
+
+.shopery-banner-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background:
+        linear-gradient(
+            90deg,
+            rgba(246, 253, 244, 0.98) 0%,
+            rgba(243, 252, 240, 0.95) 36%,
+            rgba(240, 250, 237, 0.79) 56%,
+            rgba(20, 45, 17, 0.16) 100%
+        );
+}
+
+.shopery-banner-decoration {
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+    border: 1px solid rgba(0, 178, 7, 0.12);
+    border-radius: 50%;
+}
+
+.shopery-banner-decoration-one {
+    width: 440px;
+    height: 440px;
+    top: -180px;
+    left: 37%;
+}
+
+.shopery-banner-decoration-two {
+    width: 300px;
+    height: 300px;
+    bottom: -170px;
+    left: 44%;
+}
+
+
+/* =========================================================
+   MAIN CONTAINER
+   ========================================================= */
+
+.shopery-banner-container {
+    position: relative;
+    z-index: 2;
+    width: min(1280px, calc(100% - 48px));
+    margin: 0 auto;
+    padding: 65px 0 85px;
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    align-items: center;
+    gap: 55px;
+}
+
+
+/* =========================================================
+   LEFT CONTENT
+   ========================================================= */
+
+.shopery-banner-content {
+    max-width: 650px;
+    animation: shoperyBannerContentIn 0.8s ease both;
+}
+
+.shopery-banner-eyebrow {
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 15px;
+    border: 1px solid rgba(0, 178, 7, 0.2);
+    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.75);
+    color: #078b0d;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    backdrop-filter: blur(8px);
+}
+
+.shopery-banner-eyebrow svg {
+    font-size: 16px;
+}
+
+.shopery-banner-title {
+    margin: 25px 0 20px;
+    color: #172117;
+    font-size: clamp(43px, 5.2vw, 72px);
+    font-weight: 950;
+    line-height: 1.03;
+    letter-spacing: -2.8px;
+}
+
+.shopery-banner-title span {
+    display: block;
+    margin-top: 8px;
+    color: #00a807;
+}
+
+.shopery-banner-description {
+    max-width: 540px;
+    margin: 0;
+    color: #5f6b5e;
+    font-size: 16px;
+    line-height: 1.9;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.shopery-banner-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 13px;
+    margin-top: 30px;
+}
+
+.shopery-banner-primary-btn,
+.shopery-banner-secondary-btn {
+    min-height: 52px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 11px;
+    padding: 14px 23px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 850;
+    transition:
+        background 0.25s ease,
+        color 0.25s ease,
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.shopery-banner-primary-btn {
+    background: #00b207;
+    color: #ffffff;
+    box-shadow: 0 10px 25px rgba(0, 178, 7, 0.2);
+}
+
+.shopery-banner-primary-btn:hover {
+    transform: translateY(-3px);
+    background: #008e06;
+    box-shadow: 0 14px 30px rgba(0, 178, 7, 0.26);
+}
+
+.shopery-banner-primary-btn svg,
+.shopery-banner-secondary-btn svg {
+    transition: transform 0.25s ease;
+}
+
+.shopery-banner-primary-btn:hover svg {
+    transform: translateX(4px);
+}
+
+.shopery-banner-secondary-btn {
+    border: 1px solid #d8e6d5;
+    background: rgba(255, 255, 255, 0.7);
+    color: #263426;
+}
+
+.shopery-banner-secondary-btn:hover {
+    transform: translateY(-2px);
+    border-color: #00b207;
+    background: #ffffff;
+    color: #008f06;
+}
+
+
+/* =========================================================
+   BENEFITS
+   ========================================================= */
+
+.shopery-banner-benefits {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 22px;
+    margin-top: 38px;
+    padding-top: 25px;
+    border-top: 1px solid rgba(0, 100, 0, 0.13);
+}
+
+.shopery-banner-benefit {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.shopery-banner-benefit > span {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #e0f6df;
+    color: #00a807;
+    font-size: 15px;
+}
+
+.shopery-banner-benefit strong,
+.shopery-banner-benefit small {
+    display: block;
+}
+
+.shopery-banner-benefit strong {
+    color: #273427;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.shopery-banner-benefit small {
+    margin-top: 3px;
+    color: #7b8779;
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   RIGHT VISUAL CARD
+   ========================================================= */
+
+.shopery-banner-side {
+    position: relative;
     width: 100%;
-    height: auto;
-    object-fit: contain; /* Ensures the image fits within the container while maintaining aspect ratio */
+    max-width: 470px;
+    justify-self: end;
+    padding: 15px;
+    animation: shoperyBannerVisualIn 0.9s ease both;
 }
 
-.mySwiper {
+.shopery-banner-product-card {
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 30px 80px rgba(20, 55, 18, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.shopery-banner-product-image {
+    position: relative;
+    height: 290px;
+    overflow: hidden;
+    background: #edf5e9;
+}
+
+.shopery-banner-product-image img {
     width: 100%;
     height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.5s ease;
 }
 
-/* Hide the default Swiper navigation buttons */
-.swiper-button-prev,
-.swiper-button-next {
-    display: none;
+.shopery-banner-product-card:hover
+.shopery-banner-product-image img {
+    transform: scale(1.05);
 }
 
-.custom-swiper-button-prev,
-.custom-swiper-button-next {
-    color: black;
+.shopery-banner-product-tag {
     position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
+    top: 17px;
+    left: 17px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.93);
+    color: #008f06;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+}
+
+.shopery-banner-product-info {
+    padding: 24px 25px 26px;
+}
+
+.shopery-banner-product-info > span {
+    color: #00a807;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1.4px;
+}
+
+.shopery-banner-product-info h3 {
+    margin: 9px 0 17px;
+    color: #1c281b;
+    font-size: 24px;
+    line-height: 1.3;
+    font-weight: 900;
+}
+
+.shopery-banner-product-info > a {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: #008f06;
+    font-size: 13px;
+    font-weight: 850;
+    text-decoration: none;
+}
+
+.shopery-banner-product-info > a svg {
+    transition: transform 0.25s ease;
+}
+
+.shopery-banner-product-info > a:hover svg {
+    transform: translateX(4px);
+}
+
+
+/* =========================================================
+   FLOATING NOTE
+   ========================================================= */
+
+.shopery-banner-floating-note {
+    position: absolute;
+    z-index: 3;
+    right: -12px;
+    bottom: 55px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 13px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.13);
+    animation: shoperyFloat 4s ease-in-out infinite;
+}
+
+.shopery-banner-note-icon {
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
+    border-radius: 12px;
+    background: #e6f8e5;
+    color: #00a807;
+    font-size: 18px;
+}
+
+.shopery-banner-floating-note strong,
+.shopery-banner-floating-note small {
+    display: block;
+}
+
+.shopery-banner-floating-note strong {
+    color: #253125;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.shopery-banner-floating-note small {
+    margin-top: 4px;
+    color: #7b8779;
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   SLIDE NUMBER
+   ========================================================= */
+
+.shopery-banner-slide-number {
+    position: absolute;
+    z-index: 4;
+    right: max(24px, calc((100vw - 1280px) / 2));
+    bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.shopery-banner-slide-number span:first-child {
+    color: #ffffff;
+}
+
+.shopery-banner-slide-number span:last-child {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.shopery-banner-slide-line {
+    width: 45px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.7);
+}
+
+
+/* =========================================================
+   SLIDER CONTROLS
+   ========================================================= */
+
+.shopery-banner-controls {
+    position: absolute;
+    z-index: 20;
+    left: max(24px, calc((100vw - 1280px) / 2));
+    bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.shopery-banner-control {
+    width: 39px;
+    height: 39px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.75);
     border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.8);
+    color: #078b0d;
+    font-size: 13px;
     cursor: pointer;
+    transition: all 0.25s ease;
 }
 
-.custom-swiper-button-prev,
-.custom-swiper-button-next{
-    background: #00B307;
-    color: #fff;
-    transition: ease-in-out;
-    transition-duration: .5s;
+.shopery-banner-control:hover {
+    border-color: #00b207;
+    background: #00b207;
+    color: #ffffff;
 }
 
-.custom-swiper-button-prev {
-    left: 10px;
+.shopery-banner-prev-icon {
+    transform: rotate(180deg);
 }
 
-.custom-swiper-button-next {
-    right: 10px;
-}
 
-/* Slider animation */
-/* @keyframes fadeIn {
-    0% {
-        transform: translateY(-1rem) scale(0);
-        opacity: 0;
-    }
-} */
+/* Pagination */
 
-.swiper-slide .content {
-    text-align: center;
-    width: 100%;
-    display: none;
-}
-
-.swiper-slide .content img, span, h1, p, button {
-    animation: fadeIn 0.4s cubic-bezier(.54,1.3,.63,1.34) .4s backwards;
-}
-
-.swiper-slide-active .content {
+.shopery-banner-pagination {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    text-align: center;
+    gap: 7px;
 }
 
-@media (min-width: 1024px) {
-    .swiper-slide-active .content {
-        flex-direction: row;
-        text-align: left;
+.shopery-banner-pagination .swiper-pagination-bullet {
+    width: 7px;
+    height: 7px;
+    margin: 0 !important;
+    border-radius: 20px;
+    background: #9caf98;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.shopery-banner-pagination .swiper-pagination-bullet-active {
+    width: 25px;
+    background: #00b207;
+    opacity: 1;
+}
+
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+
+@keyframes shoperyBannerContentIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
     }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shoperyBannerVisualIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes shoperyFloat {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+    .shopery-banner-swiper {
+        height: 610px;
+    }
+
+    .shopery-banner-slide {
+        min-height: 610px;
+    }
+
+    .shopery-banner-container {
+        width: calc(100% - 40px);
+        grid-template-columns: 1.05fr 0.85fr;
+        gap: 25px;
+    }
+
+    .shopery-banner-title {
+        font-size: clamp(40px, 5vw, 58px);
+    }
+
+    .shopery-banner-description {
+        font-size: 14px;
+    }
+
+    .shopery-banner-benefits {
+        gap: 12px;
+    }
+
+    .shopery-banner-benefit {
+        gap: 6px;
+    }
+
+    .shopery-banner-benefit > span {
+        width: 31px;
+        height: 31px;
+        font-size: 13px;
+    }
+
+    .shopery-banner-benefit strong {
+        font-size: 10px;
+    }
+
+    .shopery-banner-product-image {
+        height: 245px;
+    }
+
+    .shopery-banner-product-info {
+        padding: 20px;
+    }
+
+    .shopery-banner-product-info h3 {
+        font-size: 21px;
+    }
+
+    .shopery-banner-floating-note {
+        right: -3px;
+        bottom: 45px;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 767px) {
+
+    .shopery-banner-swiper {
+        height: auto;
+    }
+
+    .shopery-banner-slide {
+        min-height: auto;
+        align-items: flex-start;
+    }
+
+    .shopery-banner-image {
+        background-position: center;
+    }
+
+    .shopery-banner-overlay {
+        background: linear-gradient(
+            180deg,
+            rgba(246, 253, 244, 0.94) 0%,
+            rgba(246, 253, 244, 0.97) 57%,
+            rgba(239, 250, 236, 0.99) 100%
+        );
+    }
+
+    .shopery-banner-container {
+        width: calc(100% - 30px);
+        padding: 48px 0 100px;
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .shopery-banner-content {
+        max-width: 100%;
+    }
+
+    .shopery-banner-eyebrow {
+        padding: 8px 12px;
+        font-size: 9px;
+        letter-spacing: 1px;
+    }
+
+    .shopery-banner-title {
+        margin: 20px 0 15px;
+        font-size: clamp(38px, 9vw, 55px);
+        letter-spacing: -1.8px;
+        line-height: 1.04;
+    }
+
+    .shopery-banner-title span {
+        margin-top: 5px;
+    }
+
+    .shopery-banner-description {
+        max-width: 100%;
+        font-size: 13px;
+        line-height: 1.8;
+    }
+
+    .shopery-banner-actions {
+        gap: 10px;
+        margin-top: 22px;
+    }
+
+    .shopery-banner-primary-btn,
+    .shopery-banner-secondary-btn {
+        min-height: 46px;
+        padding: 12px 16px;
+        font-size: 12px;
+    }
+
+    .shopery-banner-benefits {
+        gap: 12px;
+        margin-top: 25px;
+        padding-top: 20px;
+    }
+
+    .shopery-banner-benefit {
+        flex: 1 1 30%;
+        align-items: flex-start;
+        gap: 7px;
+    }
+
+    .shopery-banner-benefit > span {
+        width: 29px;
+        height: 29px;
+        font-size: 12px;
+    }
+
+    .shopery-banner-benefit strong {
+        font-size: 9px;
+        line-height: 1.4;
+    }
+
+    .shopery-banner-benefit small {
+        font-size: 9px;
+        line-height: 1.4;
+    }
+
+
+    /* Product card */
+
+    .shopery-banner-side {
+        width: min(100%, 430px);
+        justify-self: center;
+        padding: 0 8px 12px;
+    }
+
+    .shopery-banner-product-card {
+        border-radius: 20px;
+    }
+
+    .shopery-banner-product-image {
+        height: 220px;
+    }
+
+    .shopery-banner-product-info {
+        padding: 18px;
+    }
+
+    .shopery-banner-product-info h3 {
+        margin: 8px 0 13px;
+        font-size: 20px;
+    }
+
+    .shopery-banner-product-info > a {
+        font-size: 12px;
+    }
+
+    .shopery-banner-floating-note {
+        right: -2px;
+        bottom: 30px;
+        padding: 10px 12px;
+        border-radius: 12px;
+    }
+
+    .shopery-banner-note-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 15px;
+    }
+
+    .shopery-banner-floating-note strong {
+        font-size: 10px;
+    }
+
+    .shopery-banner-floating-note small {
+        font-size: 9px;
+    }
+
+
+    /* Controls */
+
+    .shopery-banner-controls {
+        left: 15px;
+        bottom: 22px;
+        gap: 10px;
+        top: 15px;
+    }
+
+    .shopery-banner-control {
+        width: 34px;
+        height: 34px;
+        font-size: 11px;
+    }
+
+    .shopery-banner-slide-number {
+        right: 15px;
+        bottom: 31px;
+        gap: 8px;
+        font-size: 10px;
+        color: #087e0c;
+    }
+
+    .shopery-banner-slide-number span:first-child {
+        color: #087e0c;
+    }
+
+    .shopery-banner-slide-number span:last-child {
+        color: #71816f;
+    }
+
+    .shopery-banner-slide-line {
+        width: 25px;
+        background: #8ab88a;
+    }
+
+    .shopery-banner-decoration-one {
+        width: 250px;
+        height: 250px;
+        top: 25%;
+        left: 50%;
+    }
+
+    .shopery-banner-decoration-two {
+        width: 180px;
+        height: 180px;
+        bottom: 5%;
+        left: -10%;
+    }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 380px) {
+
+    .shopery-banner-container {
+        width: calc(100% - 24px);
+        padding-top: 38px;
+    }
+
+    .shopery-banner-title {
+        font-size: 36px;
+    }
+
+    .shopery-banner-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .shopery-banner-primary-btn,
+    .shopery-banner-secondary-btn {
+        width: 100%;
+    }
+
+    .shopery-banner-benefits {
+        gap: 8px;
+    }
+
+    .shopery-banner-benefit {
+        flex-basis: 100%;
+    }
+
+    .shopery-banner-benefit strong {
+        font-size: 10px;
+    }
+
+    .shopery-banner-benefit small {
+        font-size: 9px;
+    }
+
+    .shopery-banner-product-image {
+        height: 185px;
+    }
+
+    .shopery-banner-product-info h3 {
+        font-size: 18px;
+    }
+
+    .shopery-banner-floating-note {
+        right: -5px;
+    }
+
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .shopery-banner *,
+    .shopery-banner *::before,
+    .shopery-banner *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
 }

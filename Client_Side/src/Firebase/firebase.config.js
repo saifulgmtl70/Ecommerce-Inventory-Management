@@ -5,15 +5,14 @@ import { initializeApp } from "firebase/app";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDas9AMYGfxeS9RkNxkGLYNKupmcUIufaY",
-  authDomain: "shoperyecobazar.firebaseapp.com",
-  projectId: "shoperyecobazar",
-  storageBucket: "shoperyecobazar.appspot.com",
-  messagingSenderId: "517954911775",
-  appId: "1:517954911775:web:eff826bfee31f0b34d9f2a"
+  apiKey: "AIzaSyBUymTtDYh4dUV4Cm-EgN0Ej4PEE2iNn6o",
+  authDomain: "shopery-web.firebaseapp.com",
+  projectId: "shopery-web",
+  storageBucket: "shopery-web.firebasestorage.app",
+  messagingSenderId: "1074893655397",
+  appId: "1:1074893655397:web:2c09a9f5ee7cad2558258c"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-
 export default app;

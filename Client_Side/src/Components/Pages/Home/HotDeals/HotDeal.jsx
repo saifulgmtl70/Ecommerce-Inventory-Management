@@ -1,57 +1,102 @@
 
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback, useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
 import {
     MdOutlineArrowRightAlt,
     MdOutlineLocalFireDepartment,
-} from 'react-icons/md';
+} from "react-icons/md";
+
 import {
     FaStar,
     FaRegStar,
     FaStarHalfAlt,
-} from 'react-icons/fa';
+} from "react-icons/fa";
+
 import {
     FiShoppingCart,
     FiHeart,
     FiEye,
     FiClock,
-} from 'react-icons/fi';
-import './hotdeals.css';
+    FiRefreshCw,
+} from "react-icons/fi";
+
+import "./hotdeals.css";
+
+const API_URL = "http://localhost:5000/hotdeals";
 
 const HotDeal = () => {
+    const navigate = useNavigate();
+
     const [hotDeals, setHotDeals] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
+    const [error, setError] = useState("");
     const [wishlist, setWishlist] = useState([]);
 
-    useEffect(() => {
-        const fetchHotDeals = async () => {
-            try {
-                const response = await fetch(
-                    'http://localhost:5000/hotdeals'
+    const fetchHotDeals = useCallback(async () => {
+        setLoading(true);
+        setError("");
+
+        try {
+            const response = await fetch(API_URL);
+
+            if (!response.ok) {
+                throw new Error(
+                    `Failed to load hot deals (${response.status})`
                 );
-
-                if (!response.ok) {
-                    throw new Error('Failed to fetch hot deals');
-                }
-
-                const data = await response.json();
-                setHotDeals(Array.isArray(data) ? data : []);
-            } catch (err) {
-                console.error('Hot Deals loading error:', err);
-                setError(true);
-            } finally {
-                setLoading(false);
             }
-        };
 
-        fetchHotDeals();
+            const data = await response.json();
+
+            if (!Array.isArray(data)) {
+                throw new Error("Invalid hot deals data received.");
+            }
+
+            setHotDeals(data);
+        } catch (err) {
+            console.error("Hot Deals Error:", err);
+            setError(
+                "Hot deals load করা যাচ্ছে না। ইন্টারনেট অথবা সার্ভার সংযোগ পরীক্ষা করে আবার চেষ্টা করো।"
+            );
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
-    const getDealId = (deal) => deal._id || deal.id;
+    useEffect(() => {
+        fetchHotDeals();
+    }, [fetchHotDeals]);
 
-    const toggleWishlist = (deal) => {
-        const dealId = getDealId(deal);
+    const getDealId = (deal) => deal?._id || deal?.id;
+
+    const getDiscount = (deal) => {
+        const price = Number(deal?.price);
+        const originalPrice = Number(deal?.original_price);
+
+        if (
+            !Number.isFinite(price) ||
+            !Number.isFinite(originalPrice) ||
+            originalPrice <= price ||
+            originalPrice <= 0
+        ) {
+            return 0;
+        }
+
+        return Math.round(
+            ((originalPrice - price) / originalPrice) * 100
+        );
+    };
+
+    const formatPrice = (price) => {
+        const value = Number(price);
+
+        return `৳${(Number.isFinite(value) ? value : 0).toLocaleString(
+            "en-BD"
+        )}`;
+    };
+
+    const toggleWishlist = (dealId) => {
+        if (!dealId) return;
 
         setWishlist((previous) =>
             previous.includes(dealId)
@@ -60,244 +105,314 @@ const HotDeal = () => {
         );
     };
 
-    const getDiscount = (deal) => {
-        const price = Number(deal.price);
-        const originalPrice = Number(deal.original_price);
-
-        if (
-            Number.isFinite(price) &&
-            Number.isFinite(originalPrice) &&
-            originalPrice > price &&
-            originalPrice > 0
-        ) {
-            return Math.round(
-                ((originalPrice - price) / originalPrice) * 100
-            );
-        }
-
-        return null;
-    };
-
     const renderRating = (rating) => {
-        const numericRating = Math.max(
-            0,
-            Math.min(5, Number(rating) || 0)
-        );
+        const numericRating = Number(rating);
+        const safeRating = Number.isFinite(numericRating)
+            ? Math.min(5, Math.max(0, numericRating))
+            : 0;
+
+        const fullStars = Math.floor(safeRating);
+        const hasHalfStar = safeRating - fullStars >= 0.5;
+        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
         return (
             <div
                 className="hot-deal-rating"
-                aria-label={`Rating ${numericRating} out of 5`}
+                aria-label={`Rating ${safeRating.toFixed(1)} out of 5`}
             >
-                {[1, 2, 3, 4, 5].map((star) => {
-                    if (numericRating >= star) {
-                        return <FaStar key={star} />;
-                    }
+                {Array.from({ length: fullStars }, (_, index) => (
+                    <FaStar key={`full-${index}`} />
+                ))}
 
-                    if (numericRating >= star - 0.5) {
-                        return <FaStarHalfAlt key={star} />;
-                    }
+                {hasHalfStar && <FaStarHalfAlt />}
 
-                    return <FaRegStar key={star} />;
-                })}
+                {Array.from({ length: emptyStars }, (_, index) => (
+                    <FaRegStar key={`empty-${index}`} />
+                ))}
 
-                <span>{numericRating.toFixed(1)}</span>
+                <span>{safeRating.toFixed(1)}</span>
             </div>
         );
     };
 
-    return (
-        <section className="hot-deals-section nunito_sans">
-            <div className="hot-deals-inner">
+    const handleViewProduct = (deal) => {
+        const dealId = getDealId(deal);
 
+        if (!dealId) return;
+
+        navigate(`/product/${dealId}`);
+    };
+
+    const handleAddToCart = (deal) => {
+        // Existing behavior retained:
+        // clicking Add opens the product details page.
+        handleViewProduct(deal);
+    };
+
+    const renderSkeletons = () =>
+        Array.from({ length: 4 }, (_, index) => (
+            <div className="hot-deal-card hot-deal-skeleton" key={index}>
+                <div className="hot-deal-skeleton-image" />
+
+                <div className="hot-deal-skeleton-content">
+                    <div className="hot-deal-skeleton-line short" />
+                    <div className="hot-deal-skeleton-line" />
+                    <div className="hot-deal-skeleton-line medium" />
+                    <div className="hot-deal-skeleton-line button" />
+                </div>
+            </div>
+        ));
+
+    return (
+        <section className="hot-deals-section">
+            <div className="hot-deals-container">
                 {/* Section heading */}
                 <div className="hot-deals-heading">
-                    <div className="hot-deals-title-wrap">
+                    <div className="hot-deals-heading-content">
                         <span className="hot-deals-eyebrow">
                             <MdOutlineLocalFireDepartment />
                             SPECIAL OFFERS
                         </span>
 
-                        <h2>Hot Deals</h2>
+                        <h2>
+                            Hot <span>Deals</span>
+                        </h2>
 
                         <p>
-                            Grab your favorites before the offers are gone!
+                            Grab your favorites at special prices before
+                            these offers end.
                         </p>
                     </div>
 
-                    <Link
-                        to="/shop"
-                        className="hot-deals-view-all"
-                    >
-                        View All
+                    <Link to="/shop" className="hot-deals-view-all">
+                        View All Deals
                         <MdOutlineArrowRightAlt />
                     </Link>
                 </div>
 
-                {/* Loading state */}
+                {/* Loading */}
                 {loading && (
                     <div className="hot-deals-grid">
-                        {[1, 2, 3, 4].map((item) => (
-                            <div
-                                className="hot-deal-skeleton"
-                                key={item}
-                            >
-                                <div className="skeleton-image" />
-                                <div className="skeleton-line" />
-                                <div className="skeleton-line short" />
-                                <div className="skeleton-line medium" />
-                            </div>
-                        ))}
+                        {renderSkeletons()}
                     </div>
                 )}
 
-                {/* Error state */}
+                {/* Error */}
                 {!loading && error && (
-                    <div className="hot-deals-message">
+                    <div className="hot-deals-message hot-deals-error">
+                        <div className="hot-deals-message-icon">
+                            <MdOutlineLocalFireDepartment />
+                        </div>
+
                         <h3>Unable to load hot deals</h3>
-                        <p>
-                            Please check your connection and try again.
-                        </p>
+
+                        <p>{error}</p>
 
                         <button
                             type="button"
-                            onClick={() => window.location.reload()}
+                            className="hot-deals-retry"
+                            onClick={fetchHotDeals}
                         >
+                            <FiRefreshCw />
                             Try Again
                         </button>
                     </div>
                 )}
 
-                {/* Empty state */}
+                {/* Empty */}
                 {!loading && !error && hotDeals.length === 0 && (
-                    <div className="hot-deals-message">
-                        <h3>No hot deals available right now</h3>
-                        <p>Check back soon for exciting offers.</p>
+                    <div className="hot-deals-message hot-deals-empty">
+                        <div className="hot-deals-message-icon">
+                            <FiShoppingCart />
+                        </div>
+
+                        <h3>No hot deals available</h3>
+
+                        <p>
+                            নতুন অফার যোগ হলে এখানে দেখা যাবে।
+                            আপাতত আমাদের সব পণ্য দেখে নিতে পারো।
+                        </p>
+
+                        <Link to="/shop" className="hot-deals-retry">
+                            Explore Products
+                            <MdOutlineArrowRightAlt />
+                        </Link>
                     </div>
                 )}
 
                 {/* Product cards */}
                 {!loading && !error && hotDeals.length > 0 && (
                     <div className="hot-deals-grid">
-                        {hotDeals.map((deal) => {
+                        {hotDeals.slice(0,4).map((deal, index) => {
                             const dealId = getDealId(deal);
                             const discount = getDiscount(deal);
                             const isWishlisted = wishlist.includes(dealId);
 
+                            const price = Number(deal.price);
+                            const originalPrice = Number(
+                                deal.original_price
+                            );
+
+                            const hasOriginalPrice =
+                                Number.isFinite(originalPrice) &&
+                                originalPrice > 0 &&
+                                Number.isFinite(price) &&
+                                originalPrice > price;
+
                             return (
                                 <article
                                     className="hot-deal-card"
-                                    key={dealId}
+                                    key={dealId || `hot-deal-${index}`}
                                 >
-                                    {/* Image and badges */}
-                                    <div className="hot-deal-image-wrap">
-                                        {deal.sale && (
-                                            <span className="hot-deal-sale">
-                                                {deal.sale}
-                                            </span>
-                                        )}
+                                    <div className="hot-deal-image-wrapper">
+                                        <Link
+                                            to={
+                                                dealId
+                                                    ? `/product/${dealId}`
+                                                    : "/shop"
+                                            }
+                                            className="hot-deal-image-link"
+                                            aria-label={`View ${
+                                                deal.name || "product"
+                                            }`}
+                                        >
+                                            {deal.image ? (
+                                                <img
+                                                    src={deal.image}
+                                                    alt={
+                                                        deal.name ||
+                                                        "Hot deal product"
+                                                    }
+                                                    className="hot-deal-image"
+                                                    loading="lazy"
+                                                />
+                                            ) : (
+                                                <div className="hot-deal-no-image">
+                                                    <FiShoppingCart />
+                                                    <span>
+                                                        Image unavailable
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </Link>
 
-                                        {!deal.sale && discount && (
-                                            <span className="hot-deal-sale">
+                                        {discount > 0 ? (
+                                            <span className="hot-deal-sale-badge">
                                                 -{discount}%
                                             </span>
-                                        )}
+                                        ) : deal.sale ? (
+                                            <span className="hot-deal-sale-badge">
+                                                {deal.sale}
+                                            </span>
+                                        ) : null}
 
-                                        <div className="hot-deal-image-actions">
+                                        <div className="hot-deal-actions">
                                             <button
                                                 type="button"
-                                                className={`hot-deal-icon-btn ${
+                                                className={`hot-deal-icon-button ${
                                                     isWishlisted
-                                                        ? 'active'
-                                                        : ''
+                                                        ? "is-wishlisted"
+                                                        : ""
                                                 }`}
                                                 onClick={() =>
-                                                    toggleWishlist(deal)
+                                                    toggleWishlist(dealId)
                                                 }
                                                 aria-label={
                                                     isWishlisted
-                                                        ? 'Remove from wishlist'
-                                                        : 'Add to wishlist'
+                                                        ? "Remove from wishlist"
+                                                        : "Add to wishlist"
                                                 }
-                                                title="Wishlist"
+                                                aria-pressed={isWishlisted}
+                                                disabled={!dealId}
                                             >
                                                 <FiHeart />
                                             </button>
 
-                                            <Link
-                                                to={`/product/${dealId}`}
-                                                className="hot-deal-icon-btn"
+                                            <button
+                                                type="button"
+                                                className="hot-deal-icon-button"
+                                                onClick={() =>
+                                                    handleViewProduct(deal)
+                                                }
                                                 aria-label="View product details"
-                                                title="Quick view"
+                                                disabled={!dealId}
                                             >
                                                 <FiEye />
-                                            </Link>
+                                            </button>
                                         </div>
-
-                                        <Link
-                                            to={`/product/${dealId}`}
-                                            className="hot-deal-image-link"
-                                            aria-label={`View ${deal.name}`}
-                                        >
-                                            <img
-                                                src={deal.image}
-                                                alt={deal.name || 'Hot deal product'}
-                                                loading="lazy"
-                                            />
-                                        </Link>
                                     </div>
 
-                                    {/* Product information */}
-                                    <div className="hot-deal-info">
-                                        <Link
-                                            to={`/product/${dealId}`}
-                                            className="hot-deal-product-name"
-                                        >
-                                            {deal.name}
-                                        </Link>
+                                    <div className="hot-deal-content">
+                                        <div className="hot-deal-category">
+                                            <MdOutlineLocalFireDepartment />
+                                            Limited Offer
+                                        </div>
+
+                                        <h3 className="hot-deal-title">
+                                            <Link
+                                                to={
+                                                    dealId
+                                                        ? `/product/${dealId}`
+                                                        : "/shop"
+                                                }
+                                            >
+                                                {deal.name || "Shopery Product"}
+                                            </Link>
+                                        </h3>
 
                                         {renderRating(deal.rating)}
 
                                         <div className="hot-deal-price-row">
-                                            <span className="hot-deal-price">
-                                                ৳{Number(deal.price || 0).toLocaleString('en-BD')}
+                                            <span className="hot-deal-current-price">
+                                                {formatPrice(deal.price)}
                                             </span>
 
-                                            {Number(deal.original_price) >
-                                                Number(deal.price) && (
+                                            {hasOriginalPrice && (
                                                 <span className="hot-deal-original-price">
-                                                    ৳{Number(deal.original_price).toLocaleString('en-BD')}
+                                                    {formatPrice(
+                                                        deal.original_price
+                                                    )}
                                                 </span>
                                             )}
                                         </div>
 
-                                        <div className="hot-deal-bottom">
-                                            <div className="hot-deal-time">
-                                                <FiClock />
-                                                <span>
-                                                    {deal.deal_end_time ||
-                                                        'Limited-time offer'}
-                                                </span>
-                                            </div>
+                                        <div className="hot-deal-time">
+                                            <FiClock />
 
-                                            <button
-                                                type="button"
-                                                className="hot-deal-cart-btn"
-                                                onClick={() =>
-                                                    window.location.assign(
-                                                        `/product/${dealId}`
-                                                    )
-                                                }
-                                                aria-label={`View ${deal.name} to add to cart`}
-                                            >
-                                                <FiShoppingCart />
-                                                <span>Add</span>
-                                            </button>
+                                            <span>
+                                                {deal.deal_end_time
+                                                    ? `Offer ends: ${deal.deal_end_time}`
+                                                    : "Limited-time offer"}
+                                            </span>
                                         </div>
+
+                                        <button
+                                            type="button"
+                                            className="hot-deal-add-button"
+                                            onClick={() =>
+                                                handleAddToCart(deal)
+                                            }
+                                            disabled={!dealId}
+                                        >
+                                            <FiShoppingCart />
+                                            View Product
+                                            <MdOutlineArrowRightAlt />
+                                        </button>
                                     </div>
                                 </article>
                             );
                         })}
+                    </div>
+                )}
+
+                {/* Bottom note */}
+                {!loading && !error && hotDeals.length > 0 && (
+                    <div className="hot-deals-bottom-note">
+                        <MdOutlineLocalFireDepartment />
+                        <span>
+                            Don’t miss out — discover more deals at Shopery.
+                        </span>
+                        <Link to="/shop">Shop Now</Link>
                     </div>
                 )}
             </div>
