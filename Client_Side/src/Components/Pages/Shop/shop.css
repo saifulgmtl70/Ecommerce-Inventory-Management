@@ -1,91 +1,283 @@
-.shop_banner{
-    background: url(https://i.ibb.co/xJvmcb8/Discount-Bannar1.png);
-    background-attachment: fixed;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
-    position: relative;
-    z-index: 1;
-    padding: 50px 7%;
+
+.shopery-shop-page {
+    background: #ffffff;
+    color: #172b22;
 }
 
-.shop_banner::after{
-    position: absolute;
-    content: '';
-    height: 100%;
-    width: 100%;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    background-color: #122033dc;
-    opacity: .7;
-    z-index: -1;
+.shopery-shop-shell {
+    width: min(1280px, calc(100% - 40px));
+    margin-inline: auto;
 }
 
+/* Hero Section */
 
-.select {
-    border: 1px solid #ccc;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 16px;
-    width: 100%;
-    max-width: 200px;
+.shopery-shop-hero {
+    background:
+        radial-gradient(
+            circle at 78% 35%,
+            #e2f9e4 0,
+            transparent 35%
+        ),
+        linear-gradient(115deg, #f4fcf5, #ffffff 65%);
+
+    overflow: hidden;
 }
 
+/* Breadcrumb */
 
-
-.specific_product_banner{
-    background: url(https://i.ibb.co/JBGhwJZ/Breadcrumbs.png);
-    background-attachment: fixed;
-    background-repeat: no-repeat;
-    background-position:   right;
-    background-size: cover;
-    position: relative;
-    z-index: 1;
-}
-
-.specific_product_banner::after{
-    position: absolute;
-    content: '';
-    height: 100%;
-    width: 100%;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    background-color: #122033dc;
-    opacity: .7;
-    z-index: -1;
-}
-
-
-
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.breadcrumbs ul {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.breadcrumbs ul li {
+.shopery-shop-breadcrumb {
     display: flex;
     align-items: center;
+    gap: 11px;
+
+    padding-top: 24px;
+
+    color: #8b9b91;
+    font-size: 12px;
+    font-weight: 650;
 }
+
+.shopery-shop-breadcrumb a {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #536a5b;
+}
+
+.shopery-shop-breadcrumb span:last-child {
+    color: #00a509;
+}
+
+/* Hero Layout */
+
+.shopery-shop-hero-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    align-items: center;
+    gap: 30px;
+
+    min-height: 340px;
+    padding: 34px 0 45px;
+}
+
+.shopery-shop-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    color: #079d13;
+    font-size: 11px;
+    font-weight: 850;
+    letter-spacing: 1.6px;
+}
+
+.shopery-shop-hero-copy h1 {
+    margin: 15px 0;
+
+    font-size: clamp(34px, 4.4vw, 59px);
+    font-weight: 850;
+    letter-spacing: -2px;
+    line-height: 1.12;
+}
+
+.shopery-shop-hero-copy h1 span {
+    color: #00b207;
+}
+
+.shopery-shop-hero-copy p {
+    max-width: 490px;
+
+    color: #687b70;
+    font-size: 14px;
+    line-height: 1.85;
+}
+
+/* Hero Button */
+
+.shopery-shop-hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+
+    margin-top: 23px;
+    padding: 13px 23px;
+
+    background: #00b207;
+    color: #ffffff;
+
+    border-radius: 999px;
+
+    font-size: 13px;
+    font-weight: 800;
+
+    transition: 0.25s;
+}
+
+.shopery-shop-hero-cta:hover {
+    background: #008b06;
+    transform: translateY(-2px);
+}
+
+/* Hero Artwork */
+
+.shopery-shop-hero-art {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 265px;
+}
+
+.shopery-shop-art-circle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    width: 250px;
+    height: 250px;
+
+    border-radius: 50%;
+
+    background: linear-gradient(
+        145deg,
+        #0cbd21,
+        #007f1a
+    );
+
+    box-shadow:
+        0 25px 55px #00b20730,
+        inset 0 2px 2px #ffffff55;
+
+    color: #ffffff;
+
+    transform: rotate(-9deg);
+}
+
+.shopery-shop-art-circle > span:first-child {
+    font-size: 11px;
+    letter-spacing: 5px;
+    font-weight: 800;
+    opacity: 0.75;
+}
+
+.shopery-shop-art-circle strong {
+    margin: 14px 0;
+
+    font-size: 30px;
+    line-height: 1.18;
+    text-align: center;
+    letter-spacing: -1px;
+}
+
+.shopery-shop-art-symbol {
+    font-size: 32px;
+}
+
+.shopery-shop-art-pill {
+    position: absolute;
+    right: 3%;
+    bottom: 18px;
+
+    padding: 12px 18px;
+
+    border-radius: 30px;
+    background: #ffffff;
+
+    box-shadow: 0 12px 35px #143d1d16;
+
+    color: #188c27;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+/* Benefits Strip */
+
+.shopery-shop-perks {
+    border-bottom: 1px solid #edf2ed;
+    background: #ffffff;
+}
+
+.shopery-shop-perks-grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+
+    padding: 18px 0;
+}
+
+.shopery-shop-perks-grid span {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    color: #5e7565;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.shopery-shop-perks-grid svg {
+    color: #00b207;
+    font-size: 18px;
+}
+
+/* Preserve Specific Product Banner */
 
 .specific_product_banner {
-    background-color: #00B207;
-    padding: 1rem;
+    background: linear-gradient(
+        120deg,
+        #113c27,
+        #005c2a
+    );
+
+    color: #ffffff;
+    padding: 18px;
 }
 
-.select {
-    border: 1px solid #ccc;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 16px;
-    width: 100%;
-    max-width: 200px;
+.specific_product_banner::after {
+    display: none;
+}
+
+/* Responsive */
+
+@media (max-width: 700px) {
+    .shopery-shop-shell {
+        width: min(100% - 28px, 1280px);
+    }
+
+    .shopery-shop-hero-grid {
+        grid-template-columns: 1fr;
+        min-height: unset;
+        padding: 35px 0;
+    }
+
+    .shopery-shop-hero-copy h1 {
+        letter-spacing: -1px;
+    }
+
+    .shopery-shop-hero-art {
+        min-height: 180px;
+    }
+
+    .shopery-shop-art-circle {
+        width: 170px;
+        height: 170px;
+    }
+
+    .shopery-shop-art-circle strong {
+        font-size: 21px;
+    }
+
+    .shopery-shop-art-pill {
+        bottom: 5px;
+        right: 10px;
+    }
+
+    .shopery-shop-perks-grid {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 14px 25px;
+    }
 }

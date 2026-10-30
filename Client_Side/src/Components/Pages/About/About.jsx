@@ -29,7 +29,7 @@ import {
 import OurTeam from "./OurTeam";
 import Testimonial from "../Home/Testimonial/Testimonial";
 import Sponsor from "../Home/Sponsor/Sponsor";
-import Newsletter from "../Shop/Products/Newsletter";
+//import Newsletter from "../Shop/Products/Newsletter";
 
 import "./about.css";
 
@@ -712,7 +712,7 @@ const About = () => {
                 SECTION 9: NEWSLETTER
             ======================================== */}
 
-            <Newsletter />
+            
 
         </main>
     );

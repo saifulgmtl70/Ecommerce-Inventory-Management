@@ -1,13 +1,7 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import {
-    FaArrowLeft,
-    FaLock,
-    FaMobileAlt,
-    FaShieldAlt,
-    FaCheckCircle,
-} from "react-icons/fa";
+import { FaArrowLeft, FaLock, FaMobileAlt, FaShieldAlt, FaCheckCircle } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -66,26 +60,12 @@ const DemoPayment = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    if (
-        !checkoutData ||
-        !payment ||
-        !Number.isFinite(amount) ||
-        amount <= 0
-    ) {
+    if ( !checkoutData || !payment || !Number.isFinite(amount) || amount <= 0) {
         return (
             <section className="flex min-h-screen flex-col items-center justify-center px-5">
-                <h2 className="text-2xl font-bold text-gray-800">
-                    Payment Session Not Found
-                </h2>
-                <p className="mt-3 text-center text-gray-600">
-                    Return to checkout and start your payment again.
-                </p>
-                <Link
-                    to="/checkout"
-                    className="mt-6 rounded-lg bg-[#00B207] px-6 py-3 text-white"
-                >
-                    Back to Checkout
-                </Link>
+                <h2 className="text-2xl font-bold text-gray-800"> Payment Session Not Found </h2>
+                <p className="mt-3 text-center text-gray-600"> Return to checkout and start your payment again. </p>
+                <Link to="/checkout" className="mt-6 rounded-lg bg-[#00B207] px-6 py-3 text-white" > Back to Checkout </Link>
             </section>
         );
     }
@@ -147,15 +127,9 @@ const DemoPayment = () => {
                     status: "pending",
                 };
 
-                const response = await axiosSecure.post(
-                    "/orders",
-                    orderPayload
-                );
+                const response = await axiosSecure.post( "/orders", orderPayload );
 
-                if (
-                    response.status !== 201 ||
-                    !response.data?.insertedId
-                ) {
+                if( response.status !== 201 || !response.data?.insertedId ) {
                     throw new Error(
                         "The demo payment result could not be saved as an order."
                     );
@@ -164,13 +138,12 @@ const DemoPayment = () => {
                 savedOrderId = response.data.insertedId;
 
                 try {
-                    await axiosSecure.delete(
-                        `/carts?email=${encodeURIComponent(user.email)}`
-                    );
+                    await axiosSecure.delete( `/carts?email=${encodeURIComponent(user.email)}` );
 
                     setCart([]);
                     await refetch();
-                } catch (cartError) {
+                } 
+                catch (cartError) {
                     console.error("Cart cleanup failed:", cartError);
                     toast.warning(
                         "Order saved, but your cart could not be cleared."
@@ -191,17 +164,17 @@ const DemoPayment = () => {
                     isDemoPayment: true,
                 },
             });
-        } catch (err) {
+        } 
+        catch (err) {
             console.error("Demo payment error:", err);
-
             setError(
                 err?.response?.data?.message ||
                     err.message ||
                     "Unable to finish the demo payment."
             );
-
             toast.error("Unable to complete the demo payment.");
-        } finally {
+        } 
+        finally {
             setLoading(false);
         }
     };
@@ -215,73 +188,40 @@ const DemoPayment = () => {
             <ToastContainer position="top-center" autoClose={2500} />
 
             <div className="mx-auto max-w-lg">
-                <Link
-                    to="/checkout"
-                    className="mb-6 inline-flex items-center gap-2 text-gray-600 hover:text-green-600"
-                >
-                    <FaArrowLeft />
-                    Back to Checkout
-                </Link>
+                <Link to="/checkout" className="mb-6 inline-flex items-center gap-2 text-gray-600 hover:text-green-600" > <FaArrowLeft /> Back to Checkout  </Link>
 
                 <div className="overflow-hidden rounded-2xl bg-white shadow-lg">
-                    <div
-                        className="p-6 text-white"
-                        style={{ backgroundColor: payment.color }}
-                    >
+                    <div className="p-6 text-white" style={{ backgroundColor: payment.color }} >
                         
-                        <h1 className="mt-2 text-3xl font-bold">
-                            {payment.name}
-                        </h1>
-                        
+                        <h1 className="mt-2 text-3xl font-bold"> {payment.name} </h1>  
                     </div>
 
                     <div className="border-b p-6">
-                        <p className="text-sm text-gray-500">
-                            Total amount to pay
-                        </p>
+                        <p className="text-sm text-gray-500"> Total amount to pay </p>
                         <h2 className="mt-2 text-4xl font-bold text-gray-800">
-                            ৳
-                            {amount.toLocaleString("en-BD", {
+                            ৳ {amount.toLocaleString("en-BD", {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2,
                             })}
                         </h2>
-
-                        
-                        
-                        
                     </div>
 
                     <div className="p-6">
                         {step === "phone" && (
                             <form onSubmit={handlePhoneSubmit}>
                                 <div className="mb-5 flex items-center gap-3">
-                                    <div
-                                        className="rounded-full p-3"
-                                        style={{
-                                            backgroundColor: payment.background,
-                                            color: payment.color,
-                                        }}
-                                    >
+                                    <div className="rounded-full p-3" 
+                                        style={{ backgroundColor: payment.background,color: payment.color}} >
                                         <FaMobileAlt size={22} />
                                     </div>
                                     <div>
-                                        <h2 className="text-lg font-bold">
-                                            Mobile Number
-                                        </h2>
-                                        
+                                        <h2 className="text-lg font-bold"> Mobile Number </h2>
                                     </div>
                                 </div>
 
-                                <label
-                                    htmlFor="demo-phone"
-                                    className="mb-2 block text-sm font-semibold"
-                                >
-                                    Mobile Number
-                                </label>
+                                <label htmlFor="Phone" className="mb-2 block text-sm font-semibold" > Mobile Number </label>
 
-                                <input
-                                    id="demo-phone"
+                                <input id="demo-phone"
                                     type="tel"
                                     inputMode="numeric"
                                     autoComplete="off"
@@ -301,9 +241,7 @@ const DemoPayment = () => {
                                     </p>
                                 )}
 
-                                <button
-                                    type="submit"
-                                    className="mt-6 w-full rounded-lg py-3 font-semibold text-white"
+                                <button type="submit" className="mt-6 w-full rounded-lg py-3 font-semibold text-white"
                                     style={{
                                         backgroundColor: payment.color,
                                     }}
@@ -315,31 +253,16 @@ const DemoPayment = () => {
 
                         {step === "verification" && (
                             <form onSubmit={handleVerification}>
-                                <h2 className="mb-2 text-xl font-bold">
-                                     Verification
-                                </h2>
+                                <h2 className="mb-2 text-xl font-bold"> Verification </h2>
 
-                                <p className="mb-5 text-sm text-gray-500">
-                                    Number: {phone}
-                                </p>
+                                <p className="mb-5 text-sm text-gray-500"> Number: {phone} </p>
 
                                 <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
-                                    
-                                    <p className="mt-2 text-sm text-amber-800">
-                                        OTP: <strong>123456</strong>
-                                    </p>
-                                    <p className="mt-1 text-sm text-amber-800">
-                                        PIN: <strong>1234</strong>
-                                    </p>
-                                    
+                                    <p className="mt-2 text-sm text-amber-800"> OTP: <strong>123456</strong> </p>
+                                    <p className="mt-1 text-sm text-amber-800">PIN: <strong>1234</strong> </p>
                                 </div>
 
-                                <label
-                                    htmlFor="demo-otp"
-                                    className="mb-2 block text-sm font-semibold"
-                                >
-                                    OTP
-                                </label>
+                                <label htmlFor="Otp" className="mb-2 block text-sm font-semibold" > OTP </label>
 
                                 <input
                                     id="demo-otp"
@@ -360,12 +283,7 @@ const DemoPayment = () => {
                                     className="mb-5 w-full rounded-lg border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
                                 />
 
-                                <label
-                                    htmlFor="demo-pin"
-                                    className="mb-2 block text-sm font-semibold"
-                                >
-                                    PIN
-                                </label>
+                                <label htmlFor="Pin" className="mb-2 block text-sm font-semibold" > PIN </label>
 
                                 <input
                                     id="demo-pin"
@@ -419,8 +337,7 @@ const DemoPayment = () => {
                         {step === "result" && (
                             <div>
                                 <div className="mb-6 text-center">
-                                    <div
-                                        className="mb-4 inline-flex rounded-full p-4"
+                                    <div className="mb-4 inline-flex rounded-full p-4"
                                         style={{
                                             backgroundColor: payment.background,
                                             color: payment.color,
@@ -429,9 +346,7 @@ const DemoPayment = () => {
                                         <FaCheckCircle size={34} />
                                     </div>
 
-                                    <h2 className="text-xl font-bold">
-                                        Verification Complete
-                                    </h2>
+                                    <h2 className="text-xl font-bold"> Verification Complete </h2>
                                     
                                 </div>
 

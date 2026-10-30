@@ -1,23 +1,25 @@
-import React, { useEffect, useState } from "react";
 
-import { FiShoppingCart } from "react-icons/fi";
-import { FaRegEye, FaStar, FaStarHalfAlt } from "react-icons/fa";
-import { FaRegStar } from "react-icons/fa6";
-import { CiHeart } from "react-icons/ci";
-import { IoMdClose } from "react-icons/io";
-import { FaFacebookF } from "react-icons/fa6";
-import {
-    FaTwitter,
-    FaPinterestP,
-    FaInstagram,
-} from "react-icons/fa";
-
-import { IoClose } from "react-icons/io5";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import {
+    FiShoppingCart,
+    FiEye,
+    FiHeart,
+    FiX,
+    FiMinus,
+    FiPlus,
+    FiArrowRight,
+} from "react-icons/fi";
+
+import {
+    FaStar,
+    FaStarHalfAlt,
+    FaRegStar,
+} from "react-icons/fa";
+
+import { toast } from "react-toastify";
 
 import "./products.css";
 
@@ -25,7 +27,6 @@ import useAuth from "../../../Hooks/useAuth";
 import useAxiosPublic from "../../../Hooks/useAxiosPublic";
 import useWishlist from "../../../Hooks/useWishlist";
 import useAdmin from "../../../Hooks/useAdmin";
-
 
 const Product = ({
     product,
@@ -35,10 +36,10 @@ const Product = ({
 }) => {
     const {
         _id,
+        id,
         name,
         category,
         price,
-        images = [],
         rating,
         availability,
         description,
@@ -46,18 +47,31 @@ const Product = ({
         lowStockThreshold,
     } = product;
 
+    const productId = _id || id;
+
+    const images = Array.isArray(product.images)
+        ? product.images
+        : product.image
+        ? [product.image]
+        : [];
+
     const { user } = useAuth();
     const [isAdmin] = useAdmin();
     const navigate = useNavigate();
     const axiosPublic = useAxiosPublic();
     const [, refetch] = useWishlist();
 
-    const [selectedImage, setSelectedImage] = useState(images[0] || "");
+    const [selectedImage, setSelectedImage] = useState(
+        images[0] || ""
+    );
+
     const [quantity, setQuantity] = useState(1);
+    const [wishBusy, setWishBusy] = useState(false);
 
     // Stock information
     const hasStockTracking =
-        stockQuantity !== undefined && stockQuantity !== null;
+        stockQuantity !== undefined &&
+        stockQuantity !== null;
 
     const stock = hasStockTracking
         ? Math.max(0, Number(stockQuantity) || 0)
@@ -70,10 +84,10 @@ const Product = ({
             ? Math.max(0, Number(lowStockThreshold) || 0)
             : null;
 
-    // Determine current availability
     const isOutOfStock = hasStockTracking
         ? stock <= 0
-        : availability === "Out of Stock";
+        : String(availability || "").toLowerCase() ===
+          "out of stock";
 
     const isLowStock =
         !isOutOfStock &&
@@ -83,160 +97,162 @@ const Product = ({
         stock <= threshold;
 
     const stockStatus = isOutOfStock
-        ? "Out of Stock"
+        ? "Out of stock"
         : isLowStock
-        ? `Only ${stock} left!`
-        : "In Stock";
+        ? `Only ${stock} left`
+        : "In stock";
 
-    const getStockStatusClass = () => {
-        if (isOutOfStock) {
-            return "bg-[#FDEDED] text-[#EA4B48]";
-        }
+    const stockClass = isOutOfStock
+        ? "bg-red-50 text-red-600"
+        : isLowStock
+        ? "bg-orange-50 text-orange-700"
+        : "bg-green-50 text-green-700";
 
-        if (isLowStock) {
-            return "bg-orange-100 text-orange-700";
-        }
+    // Rating
+    const safeRating = Math.min(
+        5,
+        Math.max(0, Number(rating) || 0)
+    );
 
-        return "bg-[#D2F0D4] text-[#2C742F]";
-    };
+    const fullStars = Math.floor(safeRating);
+    const halfStar = safeRating - fullStars >= 0.5;
 
-    // Reset image and quantity when the product changes
+    const stars = (
+        <span
+            className="inline-flex items-center gap-0.5 text-[11px] text-amber-400"
+            aria-label={`${safeRating.toFixed(1)} out of 5 stars`}
+        >
+            {Array.from(
+                { length: fullStars },
+                (_, index) => (
+                    <FaStar key={`full-${index}`} />
+                )
+            )}
+
+            {halfStar && <FaStarHalfAlt />}
+
+            {Array.from(
+                {
+                    length:
+                        5 -
+                        fullStars -
+                        (halfStar ? 1 : 0),
+                },
+                (_, index) => (
+                    <FaRegStar key={`empty-${index}`} />
+                )
+            )}
+        </span>
+    );
+
+    // Price
+    const formattedPrice = `৳${(
+        Number(price) || 0
+    ).toLocaleString("en-BD")}`;
+
+    const originalPrice = Number(
+        product.original_price ||
+        product.originalPrice ||
+        0
+    );
+
+    const discount =
+        originalPrice > Number(price) &&
+        Number(price) >= 0
+            ? Math.round(
+                  ((originalPrice - Number(price)) /
+                      originalPrice) *
+                      100
+              )
+            : 0;
+
+    const productPath = productId
+        ? `/product/${productId}`
+        : "/shop";
+
+    // Reset modal
     useEffect(() => {
-        setSelectedImage(images[0] || "");
-        setQuantity(1);
-    }, [_id, images]);
-
-    // Quantity controls
-    const increaseQuantity = () => {
-        if (isOutOfStock) return;
-
-        setQuantity((previousQuantity) => {
-            if (
-                hasStockTracking &&
-                previousQuantity >= stock
-            ) {
-                toast.info(
-                    "You cannot select more than the available stock.",
-                    {
-                        position: "top-center",
-                        autoClose: 2500,
-                    }
-                );
-
-                return previousQuantity;
-            }
-
-            return previousQuantity + 1;
-        });
-    };
-
-    const decreaseQuantity = () => {
-        setQuantity((previousQuantity) =>
-            Math.max(1, previousQuantity - 1)
-        );
-    };
-
-    const handleQuantityChange = (event) => {
-        const value = Number(event.target.value);
-
-        if (!Number.isFinite(value) || value < 1) {
+        if (isModalOpen) {
+            setSelectedImage(images[0] || "");
             setQuantity(1);
-            return;
         }
+    }, [isModalOpen, productId]);
 
-        if (hasStockTracking && value > stock) {
-            setQuantity(stock);
+    // Escape key closes modal
+    useEffect(() => {
+        if (!isModalOpen) return;
 
-            toast.info(`Only ${stock} item(s) available in stock.`, {
-                position: "top-center",
-                autoClose: 2500,
-            });
+        const handleKeyDown = (event) => {
+            if (event.key === "Escape") {
+                closeModal();
+            }
+        };
 
-            return;
-        }
-
-        setQuantity(Math.floor(value));
-    };
-
-    // Rating stars
-    const renderStars = (productRating) => {
-        const safeRating = Math.min(
-            5,
-            Math.max(0, Number(productRating) || 0)
+        window.addEventListener(
+            "keydown",
+            handleKeyDown
         );
 
-        const fullStars = Math.floor(safeRating);
-        const halfStar = safeRating - fullStars >= 0.5;
-        const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+        return () =>
+            window.removeEventListener(
+                "keydown",
+                handleKeyDown
+            );
+    }, [isModalOpen, closeModal]);
 
-        return (
-            <div className="flex items-center">
-                {Array.from({ length: fullStars }, (_, index) => (
-                    <FaStar
-                        key={`full-${index}`}
-                        className="text-yellow-500"
-                    />
-                ))}
-
-                {halfStar && (
-                    <FaStarHalfAlt className="text-yellow-500" />
-                )}
-
-                {Array.from({ length: emptyStars }, (_, index) => (
-                    <FaRegStar
-                        key={`empty-${index}`}
-                        className="text-yellow-500"
-                    />
-                ))}
-            </div>
-        );
-    };
-
-    // Wishlist functionality
-    const handleWishList = async () => {
+    // Wishlist
+    const handleWishlist = async () => {
         if (!user) {
-            toast.info("Please log in to add products to your wishlist.", {
-                position: "top-center",
-                autoClose: 2500,
-            });
+            toast.info(
+                "Please log in to add products to your wishlist."
+            );
 
             navigate("/login");
             return;
         }
 
         if (isAdmin) {
-            toast.info("Admin users cannot add items to the wishlist.", {
-                position: "top-center",
-                autoClose: 3000,
-            });
-
+            toast.info(
+                "Admin users cannot add items to the wishlist."
+            );
             return;
         }
 
-        try {
-            const response = await axiosPublic.get("/wishlist", {
-                params: {
-                    email: user.email,
-                },
-            });
+        if (!productId || wishBusy) return;
 
-            const wishlistItems = response.data;
+        setWishBusy(true);
+
+        try {
+            const response = await axiosPublic.get(
+                "/wishlist",
+                {
+                    params: {
+                        email: user.email,
+                    },
+                }
+            );
+
+            const wishlistItems = Array.isArray(
+                response.data
+            )
+                ? response.data
+                : [];
 
             const alreadyExists = wishlistItems.some(
-                (item) => item.cartId === _id
+                (item) =>
+                    String(item.cartId) ===
+                    String(productId)
             );
 
             if (alreadyExists) {
-                toast.info(`${name} is already added to the Wishlist.`, {
-                    position: "top-center",
-                    autoClose: 3000,
-                });
-
+                toast.info(
+                    `${name} is already in your wishlist.`
+                );
                 return;
             }
 
             const wishlist = {
-                cartId: _id,
+                cartId: productId,
                 email: user.email,
                 product: name,
                 image: images[0] || "",
@@ -252,11 +268,9 @@ const Product = ({
             );
 
             if (result.data.insertedId) {
-                toast.success(`${name} is added to the Wishlist.`, {
-                    position: "top-center",
-                    autoClose: 3000,
-                    onClose: () => navigate("/wishlist"),
-                });
+                toast.success(
+                    `${name} added to your wishlist.`
+                );
 
                 refetch();
             }
@@ -264,343 +278,405 @@ const Product = ({
             console.error("Wishlist error:", error);
 
             toast.error(
-                "Could not update your wishlist. Please try again.",
-                {
-                    position: "top-center",
-                    autoClose: 3000,
-                }
+                "Could not update wishlist. Please try again."
             );
+        } finally {
+            setWishBusy(false);
         }
     };
 
-    return (
-        <div>
-            <ToastContainer />
+    // Quantity
+    const setSafeQuantity = (next) => {
+        const numeric = Math.max(
+            1,
+            Math.floor(Number(next) || 1)
+        );
 
+        if (hasStockTracking && numeric > stock) {
+            toast.info(
+                `Only ${stock} item(s) available.`
+            );
+
+            setQuantity(Math.max(1, stock));
+            return;
+        }
+
+        setQuantity(numeric);
+    };
+
+    return (
+        <>
             {/* Product Card */}
-            <div
-                className="h-auto p-4 border rounded-[3px] product_Card relative"
-                
-            >
+            <article className="shopery-product-card group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-green-200 hover:shadow-[0_12px_32px_rgba(0,100,30,.09)]">
                 {/* Product Image */}
-                <div>
-                    <img
-                        src={images[0] || ""}
-                        alt={name}
-                        className="w-auto lg:w-[260px] h-auto lg:h-[160px] mx-auto"
-                    />
+                <div className="relative aspect-square overflow-hidden bg-[#f8faf8]">
+                    <Link
+                        to={productPath}
+                        state={{ productId }}
+                        className="flex h-full w-full items-center justify-center p-4"
+                        aria-label={`View ${name}`}
+                    >
+                        {images[0] ? (
+                            <img
+                                src={images[0]}
+                                alt={name || "Product"}
+                                loading="lazy"
+                                className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                            />
+                        ) : (
+                            <span className="text-xs font-semibold text-gray-400">
+                                Image unavailable
+                            </span>
+                        )}
+                    </Link>
+
+                    {/* Discount Badge */}
+                    {discount > 0 && (
+                        <span className="absolute left-2 top-2 rounded-full bg-red-500 px-2.5 py-1 text-[10px] font-bold text-white">
+                            -{discount}%
+                        </span>
+                    )}
+
+                    {/* Actions */}
+                    <div className="absolute right-2 top-2 flex flex-col gap-2">
+                        <button
+                            type="button"
+                            disabled={wishBusy}
+                            onClick={handleWishlist}
+                            aria-label="Add to wishlist"
+                            className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-700 shadow-sm transition hover:bg-[#00B207] hover:text-white disabled:opacity-50"
+                        >
+                            <FiHeart />
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                openModal(productId)
+                            }
+                            aria-label="Quick view"
+                            className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-700 shadow-sm transition hover:bg-[#00B207] hover:text-white"
+                        >
+                            <FiEye />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Product Information */}
-                <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                        <Link
-                            to={`/product/${_id}`}
-                            state={{ productId: _id }}
-                        >
-                            <h4 className="text-[#333] font-[600] text-[17px] hover-text-color">
-                                {name}
-                            </h4>
-                        </Link>
+                <div className="flex flex-1 flex-col p-3 sm:p-4">
+                    <p className="mb-1 truncate text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                        {typeof category === "object"
+                            ? category?.name
+                            : category ||
+                              "Shopery Collection"}
+                    </p>
 
-                        <p className="text-bold text-[#111]">
-                            ৳{price}
-                        </p>
+                    <Link
+                        to={productPath}
+                        state={{ productId }}
+                        className="line-clamp-2 min-h-[40px] text-[13px] font-bold leading-5 text-gray-800 transition-colors hover:text-green-700 sm:text-sm"
+                    >
+                        {name || "Shopery Product"}
+                    </Link>
 
-                        <div className="flex items-center">
-                            {renderStars(rating)}
-                        </div>
+                    {/* Rating */}
+                    <div className="mt-2 flex items-center gap-1.5">
+                        {stars}
+
+                        <span className="text-[10px] text-gray-400">
+                            ({safeRating.toFixed(1)})
+                        </span>
                     </div>
 
-                    <div
-                        className={`p-2 rounded-full ${
-                            isOutOfStock
-                                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                                : "bg-[#eee] text-[#111] cursor-pointer"
-                        } cart`}
-                        title={
-                            isOutOfStock
-                                ? "Out of Stock"
-                                : "View product details"
-                        }
+                    {/* Price */}
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <strong className="text-base font-extrabold text-[#172b22]">
+                            {formattedPrice}
+                        </strong>
+
+                        {discount > 0 && (
+                            <span className="text-xs text-gray-400 line-through">
+                                ৳
+                                {originalPrice.toLocaleString(
+                                    "en-BD"
+                                )}
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Stock */}
+                    <div className="mt-3">
+                        <span
+                            className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold ${stockClass}`}
+                        >
+                            {stockStatus}
+                        </span>
+                    </div>
+
+                    {/* Product Button */}
+                    <Link
+                        to={productPath}
+                        state={{ productId }}
+                        className="mt-4 inline-flex items-center justify-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-2.5 text-xs font-bold text-green-700 transition hover:border-[#00B207] hover:bg-[#00B207] hover:text-white"
                     >
                         <FiShoppingCart />
-                    </div>
+                        View Product
+                        <FiArrowRight />
+                    </Link>
                 </div>
+            </article>
 
-                {/* Stock Status on Product Card */}
-                <div className="mt-3">
-                    <span
-                        className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded font-semibold ${getStockStatusClass()}`}
+            {/* Quick View Modal */}
+            {isModalOpen &&
+                createPortal(
+                    <div
+                        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-3 sm:p-5"
+                        onMouseDown={(event) => {
+                            if (
+                                event.target ===
+                                event.currentTarget
+                            ) {
+                                closeModal();
+                            }
+                        }}
                     >
-                        <span
-                            className={`inline-block h-2 w-2 rounded-full ${
-                                isOutOfStock
-                                    ? "bg-red-500"
-                                    : isLowStock
-                                    ? "bg-orange-500"
-                                    : "bg-green-600"
-                            }`}
-                        />
-
-                        {stockStatus}
-                    </span>
-                </div>
-
-                {/* Wishlist and Quick View */}
-                <div className="absolute top-2 right-2 text-[17px] heart_eye">
-                    <CiHeart
-                        className="cursor-pointer"
-                        onClick={handleWishList}
-                    />
-
-                    <FaRegEye
-                        className="cursor-pointer"
-                        onClick={() => openModal(_id)}
-                    />
-                </div>
-
-                {/* Original Availability Badge Position */}
-                
-            
-
-                {/* Quick View Modal */}
-                {isModalOpen &&
-                    createPortal(
                         <div
-                            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4"
-                            onClick={closeModal}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label={`${name} quick view`}
+                            className="relative max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl sm:p-8"
                         >
-                            <div
-                                className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-2xl"
-                                onClick={(event) => event.stopPropagation()}
+                            {/* Close */}
+                            <button
+                                type="button"
+                                onClick={closeModal}
+                                aria-label="Close quick view"
+                                className="absolute right-4 top-4 z-10 rounded-full bg-gray-100 p-2.5 text-gray-700 hover:bg-red-500 hover:text-white"
                             >
-                                {/* Close Button */}
-                                <button
-                                    type="button"
-                                    onClick={closeModal}
-                                    className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-700 hover:bg-red-500 hover:text-white"
-                                    aria-label="Close product details"
-                                >
-                                    <IoMdClose size={22} />
-                                </button>
+                                <FiX />
+                            </button>
 
-                                <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-                                    {/* Product Images */}
-                                    <div className="flex items-center gap-4">
-                                        {/* Thumbnails */}
-                                        <div className="flex flex-col gap-3">
-                                            {images.map((img, index) => (
-                                                <img
-                                                    key={index}
-                                                    src={img}
-                                                    alt={`Thumbnail ${index + 1}`}
-                                                    onClick={() =>
-                                                        setSelectedImage(img)
-                                                    }
-                                                    className={`h-16 w-16 cursor-pointer rounded-lg border-2 object-cover ${
-                                                        selectedImage === img
-                                                            ? "border-green-600"
-                                                            : "border-gray-200"
-                                                    }`}
-                                                />
-                                            ))}
-                                        </div>
-
-                                        {/* Main Image */}
-                                        <div className="flex flex-1 items-center justify-center">
+                            <div className="grid gap-8 md:grid-cols-2">
+                                {/* Images */}
+                                <div>
+                                    <div className="flex aspect-square items-center justify-center rounded-2xl bg-gray-50 p-5">
+                                        {selectedImage ? (
                                             <img
-                                                src={
-                                                    selectedImage ||
-                                                    images[0] ||
-                                                    ""
-                                                }
+                                                src={selectedImage}
                                                 alt={name}
-                                                className="max-h-[350px] w-full object-contain"
+                                                className="h-full w-full object-contain"
                                             />
-                                        </div>
+                                        ) : (
+                                            <span className="text-sm text-gray-400">
+                                                Image unavailable
+                                            </span>
+                                        )}
                                     </div>
 
-                                    {/* Product Information */}
-                                    <div className="space-y-5">
-                                        {/* Product Name and Stock */}
-                                        <div className="flex flex-wrap items-center gap-3">
-                                            <h2 className="text-2xl font-bold text-gray-800">
-                                                {name}
-                                            </h2>
-
-                                            <span
-                                                className={`inline-flex items-center gap-1 text-sm px-3 py-1 rounded font-semibold ${getStockStatusClass()}`}
-                                            >
-                                                <span
-                                                    className={`inline-block h-2 w-2 rounded-full ${
-                                                        isOutOfStock
-                                                            ? "bg-red-500"
-                                                            : isLowStock
-                                                            ? "bg-orange-500"
-                                                            : "bg-green-600"
-                                                    }`}
-                                                />
-
-                                                {stockStatus}
-                                            </span>
+                                    {images.length > 1 && (
+                                        <div className="mt-3 flex flex-wrap gap-2">
+                                            {images.map(
+                                                (img, index) => (
+                                                    <button
+                                                        type="button"
+                                                        key={`${img}-${index}`}
+                                                        onClick={() =>
+                                                            setSelectedImage(
+                                                                img
+                                                            )
+                                                        }
+                                                        className={`h-16 w-16 rounded-lg border-2 p-1 ${
+                                                            selectedImage ===
+                                                            img
+                                                                ? "border-green-500"
+                                                                : "border-gray-200"
+                                                        }`}
+                                                    >
+                                                        <img
+                                                            src={img}
+                                                            alt={`View ${
+                                                                index +
+                                                                1
+                                                            }`}
+                                                            className="h-full w-full object-contain"
+                                                        />
+                                                    </button>
+                                                )
+                                            )}
                                         </div>
+                                    )}
+                                </div>
 
-                                        {/* Rating */}
-                                        <div className="flex items-center gap-3">
-                                            {renderStars(rating)}
-                                        </div>
+                                {/* Details */}
+                                <div className="pt-5 md:pt-2">
+                                    <span
+                                        className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${stockClass}`}
+                                    >
+                                        {stockStatus}
+                                    </span>
 
-                                        {/* Price */}
-                                        <p className="text-3xl font-bold text-green-600">
-                                            ৳{price}
-                                        </p>
+                                    <h2 className="mt-4 pr-8 text-2xl font-extrabold text-gray-900">
+                                        {name}
+                                    </h2>
 
-                                        <hr />
+                                    <div className="mt-3 flex items-center gap-2">
+                                        {stars}
 
-                                        {/* Description */}
-                                        <p className="leading-7 text-gray-600">
-                                            {description}
-                                        </p>
+                                        <span className="text-xs text-gray-400">
+                                            {safeRating.toFixed(
+                                                1
+                                            )}{" "}
+                                            / 5
+                                        </span>
+                                    </div>
 
-                                        {/* Category */}
-                                        <p className="text-gray-700">
-                                            <strong>Category:</strong>{" "}
-                                            {category}
-                                        </p>
+                                    <p className="mt-5 text-3xl font-extrabold text-green-700">
+                                        {formattedPrice}
+                                    </p>
 
-                                        {/* Quantity and Add to Cart */}
-                                        <div className="flex flex-wrap items-center gap-4">
-                                            {/* Quantity Selector */}
-                                            <div
-                                                className={`flex items-center rounded-lg border ${
-                                                    isOutOfStock
-                                                        ? "opacity-50"
-                                                        : ""
-                                                }`}
-                                            >
-                                                <button
-                                                    type="button"
-                                                    onClick={decreaseQuantity}
-                                                    disabled={
-                                                        isOutOfStock ||
-                                                        quantity <= 1
-                                                    }
-                                                    className="px-4 py-2 text-lg hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
-                                                    aria-label="Decrease quantity"
-                                                >
-                                                    -
-                                                </button>
+                                    <p className="mt-5 text-sm leading-7 text-gray-600">
+                                        {description ||
+                                            "Explore this product for more details."}
+                                    </p>
 
-                                                <input
-                                                    type="number"
-                                                    value={
-                                                        isOutOfStock
-                                                            ? 0
-                                                            : quantity
-                                                    }
-                                                    onChange={handleQuantityChange}
-                                                    min={1}
-                                                    max={
-                                                        hasStockTracking
-                                                            ? stock
-                                                            : undefined
-                                                    }
-                                                    disabled={isOutOfStock}
-                                                    className="w-14 border-x py-2 text-center outline-none disabled:cursor-not-allowed"
-                                                    aria-label="Product quantity"
-                                                />
+                                    <p className="mt-4 text-sm text-gray-600">
+                                        <strong>
+                                            Category:
+                                        </strong>{" "}
+                                        {typeof category ===
+                                        "object"
+                                            ? category?.name
+                                            : category ||
+                                              "Uncategorized"}
+                                    </p>
 
-                                                <button
-                                                    type="button"
-                                                    onClick={increaseQuantity}
-                                                    disabled={
-                                                        isOutOfStock ||
-                                                        (hasStockTracking &&
-                                                            quantity >= stock)
-                                                    }
-                                                    className="px-4 py-2 text-lg hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
-                                                    aria-label="Increase quantity"
-                                                >
-                                                    +
-                                                </button>
-                                            </div>
-
-                                            {/* Add to Cart */}
+                                    {/* Quantity and Actions */}
+                                    <div className="mt-6 flex flex-wrap items-center gap-3">
+                                        <div className="flex items-center overflow-hidden rounded-full border border-gray-200">
                                             <button
                                                 type="button"
-                                                disabled={isOutOfStock}
-                                                className={`flex items-center gap-3 rounded-full px-8 py-3 font-semibold text-white transition ${
-                                                    isOutOfStock
-                                                        ? "bg-gray-400 cursor-not-allowed"
-                                                        : "bg-[#00B307] hover:bg-green-700"
-                                                }`}
-                                                title={
-                                                    isOutOfStock
-                                                        ? "This product is currently unavailable"
-                                                        : "Add to Cart"
+                                                disabled={
+                                                    isOutOfStock ||
+                                                    quantity <= 1
                                                 }
+                                                onClick={() =>
+                                                    setSafeQuantity(
+                                                        quantity -
+                                                            1
+                                                    )
+                                                }
+                                                className="p-3 disabled:opacity-40"
+                                                aria-label="Decrease quantity"
                                             >
-                                                {isOutOfStock
-                                                    ? "Out of Stock"
-                                                    : "Add to Cart"}
-
-                                                <FiShoppingCart />
+                                                <FiMinus />
                                             </button>
 
-                                            {/* Wishlist */}
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                max={
+                                                    hasStockTracking
+                                                        ? stock
+                                                        : undefined
+                                                }
+                                                disabled={
+                                                    isOutOfStock
+                                                }
+                                                value={
+                                                    isOutOfStock
+                                                        ? 0
+                                                        : quantity
+                                                }
+                                                onChange={(
+                                                    event
+                                                ) =>
+                                                    setSafeQuantity(
+                                                        event
+                                                            .target
+                                                            .value
+                                                    )
+                                                }
+                                                aria-label="Quantity"
+                                                className="w-12 text-center text-sm outline-none disabled:opacity-50"
+                                            />
+
                                             <button
                                                 type="button"
-                                                onClick={handleWishList}
-                                                className="rounded-full border p-3 text-xl hover:bg-gray-100"
-                                                aria-label="Add to wishlist"
+                                                disabled={
+                                                    isOutOfStock ||
+                                                    (hasStockTracking &&
+                                                        quantity >=
+                                                            stock)
+                                                }
+                                                onClick={() =>
+                                                    setSafeQuantity(
+                                                        quantity +
+                                                            1
+                                                    )
+                                                }
+                                                className="p-3 disabled:opacity-40"
+                                                aria-label="Increase quantity"
                                             >
-                                                <CiHeart />
+                                                <FiPlus />
                                             </button>
                                         </div>
 
-                                        {/* Low Stock Message */}
-                                        {isLowStock && (
-                                            <p className="text-sm font-medium text-orange-700">
-                                                Hurry! Only {stock} item(s)
-                                                left in stock.
-                                            </p>
-                                        )}
+                                        {/* Navigate to Product Details */}
+                                        <Link
+                                            to={productPath}
+                                            state={{
+                                                productId,
+                                            }}
+                                            onClick={
+                                                closeModal
+                                            }
+                                            className="inline-flex items-center gap-2 rounded-full bg-[#00B207] px-5 py-3 text-sm font-bold text-white hover:bg-green-700"
+                                        >
+                                            <FiShoppingCart />
 
-                                        {/* Out of Stock Message */}
-                                        {isOutOfStock && (
-                                            <p className="text-sm font-medium text-red-600">
-                                                This product is currently
-                                                unavailable.
-                                            </p>
-                                        )}
+                                            {isOutOfStock
+                                                ? "View Details"
+                                                : "View Product"}
+                                        </Link>
 
-                                        <hr />
-
-                                        {/* Social Share */}
-                                        <div className="flex items-center gap-4">
-                                            <span className="font-semibold text-gray-700">
-                                                Share:
-                                            </span>
-
-                                            <div className="flex items-center gap-3 text-gray-600">
-                                                <FaFacebookF className="cursor-pointer hover:text-green-600" />
-
-                                                <FaTwitter className="cursor-pointer hover:text-green-600" />
-
-                                                <FaPinterestP className="cursor-pointer hover:text-green-600" />
-
-                                                <FaInstagram className="cursor-pointer hover:text-green-600" />
-                                            </div>
-                                        </div>
+                                        {/* Wishlist */}
+                                        <button
+                                            type="button"
+                                            onClick={
+                                                handleWishlist
+                                            }
+                                            disabled={
+                                                wishBusy
+                                            }
+                                            className="rounded-full border border-gray-200 p-3 text-gray-700 hover:text-green-700"
+                                            aria-label="Add to wishlist"
+                                        >
+                                            <FiHeart />
+                                        </button>
                                     </div>
+
+                                    {isLowStock && (
+                                        <p className="mt-4 text-xs font-semibold text-orange-600">
+                                            Hurry! Only{" "}
+                                            {stock} left
+                                            in stock.
+                                        </p>
+                                    )}
+
+                                    {isOutOfStock && (
+                                        <p className="mt-4 text-xs font-semibold text-red-600">
+                                            This product is
+                                            currently
+                                            unavailable.
+                                        </p>
+                                    )}
                                 </div>
                             </div>
-                        </div>,
-                        document.body
-                    )}
-            </div>
-        </div>
+                        </div>
+                    </div>,
+                    document.body
+                )}
+        </>
     );
 };
 

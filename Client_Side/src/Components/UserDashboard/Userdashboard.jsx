@@ -1,47 +1,55 @@
 import { Link, Outlet } from "react-router-dom";
+import { HiOutlineHome, HiOutlineChevronRight } from "react-icons/hi";
+import { Helmet } from "react-helmet-async";
+
 import Header from "../Header/Header";
-import Footer from "../Footer/Footer";
-import { HiOutlineHome } from "react-icons/hi";
 import Sidebar from "./Sidebar/Sidebar";
 
-import './dashboard.css';
-
-
-import { Helmet } from 'react-helmet-async';
-
+import "./dashboard.css";
 
 const UserDashboard = () => {
     return (
-        <main className="nunito_sans">
+        <main className="nunito_sans shopery-dashboard">
             <Helmet>
-                <title>Shopery | User Dashboard </title>
-                {/* <link rel="canonical" href="https://www.tacobell.com/" /> */}
+                <title>Shopery | My Account</title>
             </Helmet>
-            <Header />
-            <div className="specific_product_banner h-full lg:h-[30vh] mb-2">
-                <div className="text-[17px] text-white breadcrumbs px-12 py-10 mb-5">
-                    <ul>
-                        <li><Link to="/" className="flex items-center gap-1"><HiOutlineHome />Home</Link></li>
-                        <li className="text-[#00B207] font-bold">Dashboard</li>
-                    </ul>
-                </div>
-            </div>
 
-            <div className="px-12 py-10">
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8">
-                    <div className="h-auto ">
-                        <Sidebar />
+            <Header />
+
+            <section className="dashboard-banner">
+                <div className="dashboard-banner-inner">
+                    <div>
+                        <span className="dashboard-eyebrow"> SHOPERY CUSTOMER ACCOUNT </span>
+                        <h1>My Dashboard</h1>
+                        <p> Manage your profile, orders and shopping preferences in one place. </p>
                     </div>
-                    <div className="h-auto lg:col-span-2 ">
+
+                    <nav aria-label="Breadcrumb" className="dashboard-breadcrumb">
+                        <Link to="/">
+                            <HiOutlineHome />
+                            <span>Home</span>
+                        </Link>
+
+                        <HiOutlineChevronRight className="breadcrumb-chevron" />
+
+                        <span className="breadcrumb-current">Dashboard</span>
+                    </nav>
+                </div>
+            </section>
+
+            <section className="dashboard-main">
+                <div className="dashboard-layout">
+                    <aside className="dashboard-sidebar">
+                        <Sidebar />
+                    </aside>
+
+                    <div className="dashboard-content">
                         <Outlet />
                     </div>
                 </div>
-            </div>
-            {/* <Footer /> */}
+            </section>
         </main>
     );
 };
-
-
 
 export default UserDashboard;

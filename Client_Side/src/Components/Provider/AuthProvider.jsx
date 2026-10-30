@@ -1,4 +1,9 @@
-import { createContext, useEffect, useState } from 'react';
+import {
+    createContext,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 
 import {
     GoogleAuthProvider,
@@ -8,168 +13,176 @@ import {
     signInWithEmailAndPassword,
     signInWithPopup,
     signOut,
-    updateProfile
+    updateProfile,
 } from "firebase/auth";
 
-import app from '../../Firebase/firebase.config';
-import useAxiosPublic from '../Hooks/useAxiosPublic';
-
-const googleProvider = new GoogleAuthProvider();
+import app from "../../Firebase/firebase.config";
+import useAxiosPublic from "../Hooks/useAxiosPublic";
 
 export const AuthContext = createContext(null);
 
 const auth = getAuth(app);
 
-const AuthProvider = ({ children }) => {
+const googleProvider = new GoogleAuthProvider();
 
+googleProvider.setCustomParameters({
+    prompt: "select_account",
+});
+
+const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const googleLoginInProgress = useRef(false);
+
     const axiosPublic = useAxiosPublic();
 
-
     // Create User
-    const createUser = (email, password) => {
+    const createUser = async (email, password) => {
         setLoading(true);
 
-        return createUserWithEmailAndPassword(
-            auth,
-            email,
-            password
-        ).catch(error => {
+        try {
+            return await createUserWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+        } catch (error) {
             setLoading(false);
             throw error;
-        });
+        }
     };
 
-
-    // Sign In
-    const signIn = (email, password) => {
+    // Email/Password Login
+    const signIn = async (email, password) => {
         setLoading(true);
 
-        return signInWithEmailAndPassword(
-            auth,
-            email,
-            password
-        ).catch(error => {
+        try {
+            return await signInWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+        } catch (error) {
             setLoading(false);
             throw error;
-        });
+        }
     };
 
+    // Google Login
+    const signInWithGoogle = async () => {
+        if (googleLoginInProgress.current) {
+            throw new Error(
+                "Google sign-in is already in progress."
+            );
+        }
 
-    // Google Sign In
-    const signInWithGoogle = () => {
-        setLoading(true);
+        googleLoginInProgress.current = true;
 
-        return signInWithPopup(
-            auth,
-            googleProvider
-        ).catch(error => {
-            setLoading(false);
+        try {
+            const result = await signInWithPopup(
+                auth,
+                googleProvider
+            );
+
+            return result;
+        } catch (error) {
+            console.error(
+                "Firebase Google authentication failed:",
+                error.code,
+                error.message
+            );
+
             throw error;
-        });
+        } finally {
+            googleLoginInProgress.current = false;
+        }
     };
-
 
     // Logout
-    const logOut = () => {
+    const logOut = async () => {
         setLoading(true);
 
-        return signOut(auth).catch(error => {
+        try {
+            return await signOut(auth);
+        } catch (error) {
             setLoading(false);
             throw error;
-        });
+        }
     };
-
 
     // Update User Profile
     const updateUserProfile = async (displayName, image) => {
-
         if (!auth.currentUser) {
             throw new Error("No authenticated user found");
         }
 
         await updateProfile(auth.currentUser, {
-            displayName: displayName,
-            photoURL: image
+            displayName,
+            photoURL: image,
         });
 
-        // Update React user state
         setUser({ ...auth.currentUser });
 
         return auth.currentUser;
     };
 
-
-    // Monitor Authentication State
+    // Monitor Firebase Authentication State
     useEffect(() => {
-
         let active = true;
 
         const unsubscribe = onAuthStateChanged(
             auth,
             async (currentUser) => {
+                if (!active) return;
 
-                console.log("Current User:", currentUser);
-
-                if (active) {
-                    setLoading(true);
-                }
+                setLoading(true);
 
                 try {
-
                     if (currentUser) {
-
-                        // Generate JWT
                         const userInfo = {
-                            email: currentUser.email
+                            email: currentUser.email,
                         };
 
                         const response = await axiosPublic.post(
-                            '/jwt',
+                            "/jwt",
                             userInfo
                         );
 
                         if (!active) return;
 
-                        if (response.data.token) {
-
+                        if (response.data?.token) {
                             localStorage.setItem(
-                                'access-token',
+                                "access-token",
                                 response.data.token
                             );
-
                         } else {
-                            localStorage.removeItem('access-token');
+                            localStorage.removeItem(
+                                "access-token"
+                            );
                         }
-
                     } else {
-
-                        localStorage.removeItem('access-token');
-
+                        localStorage.removeItem(
+                            "access-token"
+                        );
                     }
-
                 } catch (error) {
-
                     console.error(
                         "Authentication token error:",
                         error
                     );
 
                     if (active) {
-                        localStorage.removeItem('access-token');
+                        localStorage.removeItem(
+                            "access-token"
+                        );
                     }
-
                 } finally {
-
                     if (active) {
                         setUser(currentUser);
                         setLoading(false);
                     }
-
                 }
-
             }
         );
 
@@ -177,9 +190,7 @@ const AuthProvider = ({ children }) => {
             active = false;
             unsubscribe();
         };
-
     }, [axiosPublic]);
-
 
     const authInfo = {
         user,
@@ -188,16 +199,14 @@ const AuthProvider = ({ children }) => {
         signIn,
         signInWithGoogle,
         logOut,
-        updateUserProfile
+        updateUserProfile,
     };
-
 
     return (
         <AuthContext.Provider value={authInfo}>
             {children}
         </AuthContext.Provider>
     );
-
 };
 
 export default AuthProvider;

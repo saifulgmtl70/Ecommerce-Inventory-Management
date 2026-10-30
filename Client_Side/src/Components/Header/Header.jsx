@@ -1,18 +1,22 @@
-import React, { useState } from "react";
-import { FaTimes } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
 import {
-  CiSearch,
-  CiUser,
-  CiHeart,
-  CiShoppingCart,
-} from "react-icons/ci";
-import { IoCloseOutline, IoLeaf, IoLogOutOutline } from "react-icons/io5";
-import { AiOutlineClose } from "react-icons/ai";
-import { RiMenuFold2Fill } from "react-icons/ri";
-import { MdManageAccounts } from "react-icons/md";
-
+    FaBars,
+    FaRegHeart,
+    FaRegUser,
+    FaShoppingBag,
+    FaTimes,
+} from "react-icons/fa";
+import {
+    IoCloseOutline,
+    IoLogOutOutline,
+    IoLeafOutline,
+} from "react-icons/io5";
+import {
+    MdManageAccounts,
+    MdOutlineLocalShipping,
+} from "react-icons/md";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import useAuth from "../Hooks/useAuth";
@@ -22,720 +26,776 @@ import useWishlist from "../Hooks/useWishlist";
 import useAdmin from "../Hooks/useAdmin";
 
 import ProductSearch from "../Header/ProductSearch";
-
 import "./Header.css";
 
+const navigationLinks = [
+    { label: "Home", to: "/" },
+    { label: "Shop", to: "/shop" },
+    { label: "Blog", to: "/blog" },
+    { label: "About Us", to: "/about" },
+    { label: "Contact", to: "/contact" },
+];
+
 function Header() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [cartOpen, setCartOpen] = useState(false);
-  const [wishListOpen, setWishListOpen] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [cartOpen, setCartOpen] = useState(false);
+    const [wishListOpen, setWishListOpen] = useState(false);
+    const [searchOpen, setSearchOpen] = useState(false);
+    const [deletingCartId, setDeletingCartId] = useState(null);
+    const [deletingWishlistId, setDeletingWishlistId] = useState(null);
 
-  // New Search State
-  const [searchOpen, setSearchOpen] = useState(false);
+    const [cart, setCart] = useCart();
+    const [wishlist, refetch] = useWishlist();
 
-  const [cart, setCart] = useCart();
-  const [wishlist, refetch] = useWishlist();
+    const { user, logOut } = useAuth();
+    const [isAdmin] = useAdmin();
 
-  const { user, logOut } = useAuth();
-  const [isAdmin] = useAdmin();
+    const navigate = useNavigate();
+    const axiosPublic = useAxiosPublic();
 
-  const navigate = useNavigate();
-  const axiosPublic = useAxiosPublic();
+    const userPhoto =
+        user?.photoURL ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            user?.displayName || "Shopery User"
+        )}&background=16A34A&color=fff`;
 
-  // Close Mobile Menu
-  const handleMenuItemClick = () => {
-    setMenuOpen(false);
-  };
+    const cartItems = Array.isArray(cart) ? cart : [];
+    const wishlistItems = Array.isArray(wishlist) ? wishlist : [];
 
-  // Close Cart
-  const handleCloseCart = () => {
-    setCartOpen(false);
-  };
+    const totalPrice = cartItems.reduce((total, item) => {
+        const price = Number(item.price);
+        const quantity = Number(item.quantity || 1);
 
-  // Close Wishlist
-  const handleCloseWishList = () => {
-    setWishListOpen(false);
-  };
+        return total + (Number.isFinite(price) ? price * quantity : 0);
+    }, 0);
 
-  // Open Search
-  const handleOpenSearch = () => {
-    setMenuOpen(false);
-    setDropdownOpen(false);
-    setCartOpen(false);
-    setWishListOpen(false);
-    setSearchOpen(true);
-  };
+    const formatPrice = (price) =>
+        new Intl.NumberFormat("en-BD", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        }).format(price);
 
-  // Close Search
-  const handleCloseSearch = () => {
-    setSearchOpen(false);
-  };
+    const closeAllPanels = () => {
+        setMenuOpen(false);
+        setDropdownOpen(false);
+        setCartOpen(false);
+        setWishListOpen(false);
+    };
 
-  // Logout
-  const handleLogout = () => {
-    logOut()
-      .then(() => {
-        toast.success("Logged Out Successfully", {
-          position: "top-center",
-          autoClose: 1000,
-          onClose: () => navigate("/login"),
-        });
-      })
-      .catch((error) => {
-        console.error("Logout error:", error);
-        toast.error("Logout failed. Please try again.");
-      });
+    const handleOpenSearch = () => {
+        closeAllPanels();
+        setSearchOpen(true);
+    };
 
-    setDropdownOpen(false);
-  };
+    const handleLogout = async () => {
+        try {
+            await logOut();
+            setDropdownOpen(false);
+            setMenuOpen(false);
+            toast.success("Logged out successfully.", {
+                position: "top-center",
+                autoClose: 1000,
+                onClose: () => navigate("/login"),
+            });
+        } catch (error) {
+            console.error("Logout error:", error);
+            toast.error("Logout failed. Please try again.");
+        }
+    };
 
-  // Calculate Cart Total
-  const calculateTotalPrice = () => {
-    return cart
-      .reduce((total, item) => {
-        const itemPrice = Number(item.price);
+    const handleDeleteCartItem = async (id) => {
+        if (deletingCartId) return;
 
-        return !isNaN(itemPrice)
-          ? total + itemPrice
-          : total;
-      }, 0)
-      .toFixed(2);
-  };
+        setDeletingCartId(id);
 
-  const totalPrice = calculateTotalPrice();
+        try {
+            const response = await axiosPublic.delete(`/carts/${id}`);
 
-  // Delete Cart Item
-  const handleDeleteItem = async (id) => {
-    try {
-      const res = await axiosPublic.delete(`/carts/${id}`);
+            if (
+                response.data?.deletedCount > 0 ||
+                response.status === 200
+            ) {
+                setCart((previousCart) =>
+                    (Array.isArray(previousCart) ? previousCart : []).filter(
+                        (item) => item._id !== id
+                    )
+                );
 
-      if (res.data.deletedCount > 0) {
-        setCart(cart.filter((item) => item._id !== id));
+                toast.success("Product removed from cart.", {
+                    position: "top-center",
+                    autoClose: 1800,
+                });
+            } else {
+                toast.error("The cart item could not be removed.");
+            }
+        } catch (error) {
+            console.error("Delete cart item error:", error);
+            toast.error("Failed to remove cart item.");
+        } finally {
+            setDeletingCartId(null);
+        }
+    };
 
-        toast.success("Deleted Successfully", {
-          position: "top-center",
-          autoClose: 2000,
-        });
-      }
-    } catch (error) {
-      console.error("Delete cart item error:", error);
-      toast.error("Failed to delete cart item.");
-    }
-  };
+    const handleDeleteWishlistItem = async (id) => {
+        if (deletingWishlistId) return;
 
-  // Delete Wishlist Item
-  const handleDeleteWishlistItem = async (id) => {
-    try {
-      const res = await axiosPublic.delete(`/wishlist/${id}`);
+        setDeletingWishlistId(id);
 
-      if (res.data.deletedCount > 0) {
-        toast.success("Wishlist item deleted successfully", {
-          position: "top-center",
-          autoClose: 2000,
-        });
+        try {
+            const response = await axiosPublic.delete(`/wishlist/${id}`);
 
-        refetch();
-      }
-    } catch (error) {
-      console.error("Delete wishlist item error:", error);
-      toast.error("Failed to delete wishlist item.");
-    }
-  };
+            if (
+                response.data?.deletedCount > 0 ||
+                response.status === 200
+            ) {
+                await refetch();
 
-  // User Profile Image
-  const userPhoto =
-    user?.photoURL ||
-    "https://ui-avatars.com/api/?name=User&background=00B207&color=fff";
+                toast.success("Removed from wishlist.", {
+                    position: "top-center",
+                    autoClose: 1800,
+                    onClose: () => navigate("/"),
+                });
+            } else {
+                toast.error("The wishlist item could not be removed.");
+            }
+        } catch (error) {
+            console.error("Delete wishlist item error:", error);
+            toast.error("Failed to remove wishlist item.");
+        } finally {
+            setDeletingWishlistId(null);
+        }
+    };
 
-  return (
-    <div className="bg-white z-50 shadow-sm top-0 sticky nunito_sans">
-      <ToastContainer />
+    useEffect(() => {
+        if (!menuOpen && !cartOpen && !wishListOpen && !searchOpen) {
+            document.body.style.overflow = "";
+            return;
+        }
 
-      {/* ================= TOP BAR ================= */}
-      <div>
-        <div className="lg:flex justify-between hidden items-center px-4 md:px-12 py-2 bg-[#EDF2EE]">
-          <div className="text-sm text-[#84D187]">
-            <span>
-              🚚 Delivery Available Across Bangladesh
-            </span>
-          </div>
+        document.body.style.overflow = "hidden";
 
-          <div className="flex items-center space-x-4">
-            <div className="flex space-x-2">
-              <button className="text-[#84D187]">
-                Eng
-              </button>
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [menuOpen, cartOpen, wishListOpen, searchOpen]);
 
-              <button className="text-[#84D187]">
-                USD
-              </button>
-            </div>
-          </div>
-        </div>
+    useEffect(() => {
+        const handleEscape = (event) => {
+            if (event.key === "Escape") {
+                closeAllPanels();
+                setSearchOpen(false);
+            }
+        };
 
-        {/* ================= MAIN HEADER ================= */}
-        <div className="flex justify-between items-center navmenu px-4 md:px-12 py-4">
+        document.addEventListener("keydown", handleEscape);
 
-          {/* Logo */}
-          <Link
-            to="/"
-            className="text-[30px] poetsen_one tracking-wide flex items-center font-bold text-[#00B207]"
-          >
-            <IoLeaf />
-            Ecobazaar
-          </Link>
+        return () => {
+            document.removeEventListener("keydown", handleEscape);
+        };
+    }, []);
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
+    const navLinkClass = ({ isActive }) =>
+        `shopery-nav-link ${isActive ? "active" : ""}`;
+
+    const renderNavigationLinks = (mobile = false) =>
+        navigationLinks.map((item) => (
             <NavLink
-              to="/"
-              className="text-[#666666] hover:text-[#333333] text-[15px] font-[600]"
-            >
-              Home
-            </NavLink>
-
-            <NavLink
-              to="/shop"
-              className="text-[#666666] hover:text-[#333333] text-[15px] font-[600]"
-            >
-              Shop
-            </NavLink>
-
-            <NavLink
-              to="/blog"
-              className="text-[#666666] hover:text-[#333333] text-[15px] font-[600]"
-            >
-              Blog
-            </NavLink>
-
-            <NavLink
-              to="/about"
-              className="text-[#666666] hover:text-[#333333] text-[15px] font-[600]"
-            >
-              About Us
-            </NavLink>
-
-            <NavLink
-              to="/contact"
-              className="text-[#666666] hover:text-[#333333] text-[15px] font-[600]"
-            >
-              Contact Us
-            </NavLink>
-          </nav>
-
-          {/* ================= DESKTOP ICONS ================= */}
-          <div className="hidden md:flex items-center space-x-4">
-
-            {/* Functional Search Button */}
-            <button
-              type="button"
-              onClick={handleOpenSearch}
-              aria-label="Search products"
-              className="flex items-center justify-center -mt-1"
-            >
-              <CiSearch className="text-[#222] text-[23px] cursor-pointer hover:text-[#00B207] transition" />
-            </button>
-
-            {/* Wishlist Icon */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setWishListOpen(true)}
-                aria-label="Open wishlist"
-              >
-                <CiHeart className="text-[#222] text-[23px] cursor-pointer" />
-              </button>
-
-              {wishlist.length > 0 && (
-                <span className="text-[#00B307] absolute font-bold -top-3 -right-1 rounded-full">
-                  {wishlist.length}
-                </span>
-              )}
-            </div>
-
-            {/* Cart Icon */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setCartOpen(true)}
-                aria-label="Open shopping cart"
-              >
-                <CiShoppingCart className="text-[#222] text-[23px] cursor-pointer" />
-              </button>
-
-              {cart.length > 0 && (
-                <span className="text-[#00B307] absolute font-bold -top-3 -right-1 rounded-full">
-                  {cart.length}
-                </span>
-              )}
-            </div>
-
-            {/* ================= USER DROPDOWN ================= */}
-            {user ? (
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center focus:outline-none"
-                >
-                  <img
-                    src={userPhoto}
-                    alt="User"
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-
-                  <span className="ml-2 text-[#444]">
-                    {user.displayName || "User"}
-                  </span>
-                </button>
-
-                {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 h-auto w-72 bg-white border rounded shadow-lg z-50">
-
-                    <div className="flex items-center justify-center pt-3">
-                      <img
-                        src={userPhoto}
-                        alt="User"
-                        className="w-16 h-16 rounded-full object-cover"
-                      />
-                    </div>
-
-                    <div className="p-3 text-center">
-                      <p className="font-bold text-[23px]">
-                        {user.displayName || "User"}
-                      </p>
-
-                      <p className="text-[16px] text-gray-600 break-all">
-                        {user.email}
-                      </p>
-                    </div>
-
-                    {isAdmin ? (
-                      <Link
-                        to="/admindashboard/adminhome"
-                        onClick={() => setDropdownOpen(false)}
-                        className="w-full text-[18px] bg-gray-100 px-3 py-3 flex items-center gap-2 hover:bg-gray-200"
-                      >
-                        <MdManageAccounts />
-                        Admin Dashboard
-                      </Link>
-                    ) : (
-                      <Link
-                        to="/userdashboard/userhome"
-                        onClick={() => setDropdownOpen(false)}
-                        className="w-full text-[18px] bg-gray-100 px-3 py-3 flex items-center gap-2 hover:bg-gray-200"
-                      >
-                        <MdManageAccounts />
-                        Your Profile
-                      </Link>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="border-t w-full text-[18px] cursor-pointer bg-gray-100 px-3 py-3 flex items-center gap-2 hover:bg-gray-200"
-                    >
-                      <IoLogOutOutline />
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <Link to="/login">
-                <CiUser className="text-[#222] text-[23px] cursor-pointer" />
-              </Link>
-            )}
-          </div>
-
-          {/* ================= MOBILE HEADER ================= */}
-          <div className="md:hidden flex items-center gap-3">
-
-            {/* Mobile Search */}
-            <button
-              type="button"
-              onClick={handleOpenSearch}
-              aria-label="Search products"
-            >
-              <CiSearch className="text-[#222] text-[23px] -mt-1" />
-            </button>
-
-            {/* Mobile Cart */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setCartOpen(true)}
-                aria-label="Open shopping cart"
-              >
-                <CiShoppingCart className="text-[#222] text-[23px]" />
-              </button>
-
-              {cart.length > 0 && (
-                <span className="text-[#00B307] absolute font-bold -top-3 -right-1">
-                  {cart.length}
-                </span>
-              )}
-            </div>
-
-            {/* Mobile User */}
-            {user ? (
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                >
-                  <img
-                    src={userPhoto}
-                    alt="User"
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                </button>
-
-                {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white border rounded shadow-lg z-50">
-
-                    <div className="flex items-center justify-center pt-3">
-                      <img
-                        src={userPhoto}
-                        alt="User"
-                        className="w-16 h-16 rounded-full object-cover"
-                      />
-                    </div>
-
-                    <div className="p-3 text-center">
-                      <p className="font-bold text-[18px]">
-                        {user.displayName || "User"}
-                      </p>
-
-                      <p className="text-[15px] text-gray-600 break-all">
-                        {user.email}
-                      </p>
-                    </div>
-
-                    {isAdmin ? (
-                      <Link
-                        to="/admindashboard/adminhome"
-                        onClick={() => setDropdownOpen(false)}
-                        className="w-full bg-gray-100 px-3 py-3 flex items-center gap-2"
-                      >
-                        <MdManageAccounts />
-                        Admin Dashboard
-                      </Link>
-                    ) : (
-                      <Link
-                        to="/userdashboard/userhome"
-                        onClick={() => setDropdownOpen(false)}
-                        className="w-full bg-gray-100 px-3 py-3 flex items-center gap-2"
-                      >
-                        <MdManageAccounts />
-                        Your Profile
-                      </Link>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="border-t w-full bg-gray-100 px-3 py-3 flex items-center gap-2"
-                    >
-                      <IoLogOutOutline />
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <Link to="/login">
-                <CiUser className="text-[#444] text-[23px]" />
-              </Link>
-            )}
-
-            {/* Mobile Menu Button */}
-            <button
-              type="button"
-              onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Toggle menu"
-            >
-              {menuOpen ? (
-                <AiOutlineClose className="text-[#444] text-[23px]" />
-              ) : (
-                <RiMenuFold2Fill className="text-[#444] text-[23px]" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* ================= MOBILE MENU ================= */}
-        <div
-          className={`md:hidden bg-[#EDF2EE] navmenu fixed top-0 right-0 h-full w-full max-w-xs transition-transform duration-300 ease-in-out transform ${
-            menuOpen ? "translate-x-0" : "translate-x-full"
-          } z-50`}
-        >
-          <button
-            type="button"
-            className="absolute top-4 right-4 cursor-pointer text-[#444] text-[20px]"
-            onClick={() => setMenuOpen(false)}
-          >
-            <AiOutlineClose />
-          </button>
-
-          <nav className="flex flex-col items-center space-y-4 py-4 mt-16">
-            <NavLink
-              onClick={handleMenuItemClick}
-              to="/"
-              className="text-[#666666] hover:text-[#333333] text-[15px] font-[600]"
-            >
-              Home
-            </NavLink>
-
-            <NavLink
-              onClick={handleMenuItemClick}
-              to="/shop"
-              className="text-[#666666] hover:text-[#333333] text-[15px] font-[600]"
-            >
-              Shop
-            </NavLink>
-
-            <NavLink
-              onClick={handleMenuItemClick}
-              to="/blog"
-              className="text-[#666666] hover:text-[#333333] text-[15px] font-[600]"
-            >
-              Blog
-            </NavLink>
-
-            <NavLink
-              onClick={handleMenuItemClick}
-              to="/about"
-              className="text-[#666666] hover:text-[#333333] text-[15px] font-[600]"
-            >
-              About Us
-            </NavLink>
-
-            <NavLink
-              onClick={handleMenuItemClick}
-              to="/contact"
-              className="text-[#666666] hover:text-[#333333] text-[15px] font-[600]"
-            >
-              Contact Us
-            </NavLink>
-          </nav>
-
-          <div className="flex justify-center space-x-6 pb-4">
-
-            {/* Mobile Menu Search */}
-            <button
-              type="button"
-              onClick={handleOpenSearch}
-              aria-label="Search products"
-            >
-              <CiSearch className="text-[#222] text-[23px]" />
-            </button>
-
-            {/* Mobile Wishlist */}
-            <div className="relative">
-              <button
-                type="button"
+                key={item.to}
+                to={item.to}
+                end={item.to === "/"}
+                className={navLinkClass}
                 onClick={() => {
-                  setMenuOpen(false);
-                  setWishListOpen(true);
+                    if (mobile) setMenuOpen(false);
                 }}
-                aria-label="Open wishlist"
-              >
-                <CiHeart className="text-[#222] text-[23px]" />
-              </button>
+            >
+                {item.label}
+            </NavLink>
+        ));
 
-              {wishlist.length > 0 && (
-                <span className="text-[#00B307] absolute font-bold -top-3 -right-1">
-                  {wishlist.length}
+    const UserDropdown = ({ mobile = false }) => (
+        <div className="shopery-user-dropdown">
+            <div className="shopery-user-summary">
+                <img src={userPhoto} alt="User profile" />
+
+                <div className="min-w-0">
+                    <p className="shopery-user-name">
+                        {user?.displayName || "Shopery User"}
+                    </p>
+                    <p className="shopery-user-email">{user?.email}</p>
+                </div>
+            </div>
+
+            {isAdmin ? (
+                <Link
+                    to="/admindashboard/adminhome"
+                    className="shopery-dropdown-link"
+                    onClick={() => {
+                        setDropdownOpen(false);
+                        if (mobile) setMenuOpen(false);
+                    }}
+                >
+                    <MdManageAccounts />
+                    <span>Admin Dashboard</span>
+                </Link>
+            ) : (
+                <Link
+                    to="/userdashboard/userhome"
+                    className="shopery-dropdown-link"
+                    onClick={() => {
+                        setDropdownOpen(false);
+                        if (mobile) setMenuOpen(false);
+                    }}
+                >
+                    <MdManageAccounts />
+                    <span>Your Profile</span>
+                </Link>
+            )}
+
+            <button
+                type="button"
+                className="shopery-dropdown-link shopery-logout-button"
+                onClick={handleLogout}
+            >
+                <IoLogOutOutline />
+                <span>Logout</span>
+            </button>
+        </div>
+    );
+
+    const IconButton = ({
+        label,
+        icon,
+        count,
+        onClick,
+        className = "",
+    }) => (
+        <button
+            type="button"
+            className={`shopery-icon-button ${className}`}
+            onClick={onClick}
+            aria-label={label}
+            title={label}
+        >
+            {icon}
+            {count > 0 && (
+                <span className="shopery-icon-badge">
+                    {count > 99 ? "99+" : count}
                 </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+            )}
+        </button>
+    );
 
-      {/* ================= CART SIDEBAR ================= */}
-      <div
-        className={`fixed top-0 right-0 h-full w-full max-w-sm bg-white transition-transform duration-300 ease-in-out transform ${
-          cartOpen ? "translate-x-0" : "translate-x-full"
-        } z-50 shadow-lg`}
-      >
-        <div className="flex justify-between items-center px-4 py-4 bg-[#f9f8f8]">
-          <h2 className="text-lg text-[#00B307] font-bold">
-            Your Shopping Cart ({cart.length})
-          </h2>
+    return (
+        <header className="shopery-header">
+            <ToastContainer />
 
-          <button
-            type="button"
-            onClick={() => setCartOpen(false)}
-            className="text-[#00B307]"
-          >
-            <FaTimes />
-          </button>
-        </div>
-
-        <div className="scrollable-container p-4">
-          <ul className="mb-36">
-            {cart.map((item) => (
-              <li
-                key={item._id}
-                className="border-b pb-3 flex items-center justify-between px-3 py-2"
-              >
-                <div className="flex items-center gap-2">
-                  <img
-                    src={item.image}
-                    alt={item.product}
-                    className="w-[80px] h-[80px] object-contain"
-                  />
-
-                  <div>
-                    <h3 className="text-[18px] text-[#191919] font-[600] mb-1">
-                      {item.product}
-                    </h3>
-
-                    <p className="text-[15px] text-[#999]">
-                      1kg ={" "}
-                      <span className="text-[#222] font-bold">
-                        ৳{item.price}
-                      </span>
+            {/* Announcement bar */}
+            <div className="shopery-announcement">
+                <div className="shopery-container shopery-announcement-inner">
+                    <p>
+                        <MdOutlineLocalShipping />
+                        <span>Fresh finds, delivered across Bangladesh</span>
                     </p>
-                  </div>
+
+                    <span className="shopery-announcement-note">
+                        A better way to shop every day
+                    </span>
+                </div>
+            </div>
+
+            {/* Main header */}
+            <div className="shopery-main-header">
+                <div className="shopery-container shopery-header-main-inner">
+                    <Link
+                        to="/"
+                        className="shopery-brand"
+                        aria-label="Shopery home"
+                        onClick={() => setMenuOpen(false)}
+                    >
+                        <span className="shopery-brand-mark">
+                            <IoLeafOutline />
+                        </span>
+
+                        <span className="shopery-brand-text">
+                            Shopery
+                            <span className="shopery-brand-dot">.</span>
+                        </span>
+                    </Link>
+
+                    <nav
+                        className="shopery-desktop-nav"
+                        aria-label="Main navigation"
+                    >
+                        {renderNavigationLinks()}
+                    </nav>
+
+                    <div className="shopery-header-actions">
+                        <IconButton
+                            label="Search products"
+                            icon={<span className="shopery-search-symbol">⌕</span>}
+                            onClick={handleOpenSearch}
+                        />
+
+                        <IconButton
+                            label="Open wishlist"
+                            icon={<FaRegHeart />}
+                            count={wishlistItems.length}
+                            onClick={() => {
+                                closeAllPanels();
+                                setWishListOpen(true);
+                            }}
+                        />
+
+                        <IconButton
+                            label="Open shopping cart"
+                            icon={<FaShoppingBag />}
+                            count={cartItems.length}
+                            onClick={() => {
+                                closeAllPanels();
+                                setCartOpen(true);
+                            }}
+                        />
+
+                        <div className="shopery-account-area">
+                            {user ? (
+                                <button
+                                    type="button"
+                                    className={`shopery-account-button ${
+                                        dropdownOpen ? "is-open" : ""
+                                    }`}
+                                    onClick={() =>
+                                        setDropdownOpen((previous) => !previous)
+                                    }
+                                    aria-expanded={dropdownOpen}
+                                    aria-label="Open account menu"
+                                >
+                                    <img src={userPhoto} alt="" />
+                                    <span className="shopery-account-label">
+                                        {user.displayName?.split(" ")[0] ||
+                                            "Account"}
+                                    </span>
+                                </button>
+                            ) : (
+                                <Link
+                                    to="/login"
+                                    className="shopery-login-button"
+                                >
+                                    <FaRegUser />
+                                    <span>Sign in</span>
+                                </Link>
+                            )}
+
+                            {user && dropdownOpen && (
+                                <UserDropdown />
+                            )}
+                        </div>
+
+                        <button
+                            type="button"
+                            className="shopery-mobile-menu-button"
+                            aria-label={menuOpen ? "Close menu" : "Open menu"}
+                            aria-expanded={menuOpen}
+                            onClick={() =>
+                                setMenuOpen((previous) => !previous)
+                            }
+                        >
+                            {menuOpen ? <FaTimes /> : <FaBars />}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Mobile menu */}
+            {menuOpen && (
+                <button
+                    type="button"
+                    aria-label="Close navigation menu"
+                    className="shopery-screen-backdrop shopery-menu-backdrop"
+                    onClick={() => setMenuOpen(false)}
+                />
+            )}
+
+            <aside
+                className={`shopery-mobile-drawer ${
+                    menuOpen ? "is-open" : ""
+                }`}
+                aria-hidden={!menuOpen}
+            >
+                <div className="shopery-mobile-drawer-heading">
+                    <Link
+                        to="/"
+                        className="shopery-brand"
+                        onClick={() => setMenuOpen(false)}
+                    >
+                        <span className="shopery-brand-mark">
+                            <IoLeafOutline />
+                        </span>
+                        <span className="shopery-brand-text">
+                            Shopery<span className="shopery-brand-dot">.</span>
+                        </span>
+                    </Link>
+
+                    <button
+                        type="button"
+                        className="shopery-close-button"
+                        onClick={() => setMenuOpen(false)}
+                        aria-label="Close menu"
+                    >
+                        <FaTimes />
+                    </button>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleDeleteItem(item._id)}
-                  className="text-[#6d5656] text-[23px] p-[6px] border rounded-full"
+                {user && (
+                    <div className="shopery-mobile-user">
+                        <img src={userPhoto} alt="User profile" />
+                        <div className="min-w-0">
+                            <p>{user.displayName || "Shopery User"}</p>
+                            <span>{user.email}</span>
+                        </div>
+                    </div>
+                )}
+
+                <nav
+                    className="shopery-mobile-nav"
+                    aria-label="Mobile navigation"
                 >
-                  <IoCloseOutline />
-                </button>
-              </li>
-            ))}
-          </ul>
+                    {renderNavigationLinks(true)}
+                </nav>
 
-          {/* Cart Footer */}
-          <div className="fixed bottom-0 left-0 w-full p-4 bg-white border-t">
-            <div className="flex items-center justify-between px-2 my-2">
-              <h2 className="text-[#444] font-[500]">
-                {cart.length} Product
-              </h2>
+                <div className="shopery-mobile-shortcuts">
+                    <button
+                        type="button"
+                        onClick={handleOpenSearch}
+                    >
+                        <span><span className="shopery-search-symbol">⌕</span></span>
+                        Search products
+                    </button>
 
-              <h1 className="text-[#191919] font-bold">
-                ৳{totalPrice}
-              </h1>
-            </div>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setMenuOpen(false);
+                            setWishListOpen(true);
+                        }}
+                    >
+                        <span><FaRegHeart /></span>
+                        Wishlist
+                        <span className="shopery-shortcut-count">
+                            {wishlistItems.length}
+                        </span>
+                    </button>
 
-            <div className="flex flex-col gap-3 justify-around">
-              <Link
-                onClick={handleCloseCart}
-                to="/checkout"
-                className="px-12 py-3 text-center rounded-[24px] bg-[#00B207] text-white"
-              >
-                Checkout
-              </Link>
+                    {user ? (
+                        <>
+                            <Link
+                                to={
+                                    isAdmin
+                                        ? "/admindashboard/adminhome"
+                                        : "/userdashboard/userhome"
+                                }
+                                onClick={() => setMenuOpen(false)}
+                            >
+                                <span><MdManageAccounts /></span>
+                                {isAdmin ? "Admin Dashboard" : "Your Profile"}
+                            </Link>
 
-              <Link
-                onClick={handleCloseCart}
-                to="/cart"
-                className="px-12 py-3 text-center rounded-[24px] bg-[#d2e7d2] text-[#00B207] font-bold"
-              >
-                Go to Cart
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ================= WISHLIST SIDEBAR ================= */}
-      <div
-        className={`fixed top-0 right-0 h-full w-full max-w-sm bg-white transition-transform duration-300 ease-in-out transform ${
-          wishListOpen ? "translate-x-0" : "translate-x-full"
-        } z-50 shadow-lg`}
-      >
-        <div className="flex justify-between items-center px-4 py-4 bg-[#f9f8f8]">
-          <h2 className="text-lg text-[#00B307] font-bold">
-            Your Wishlist ({wishlist.length})
-          </h2>
-
-          <button
-            type="button"
-            onClick={() => setWishListOpen(false)}
-            className="text-[#00B307]"
-          >
-            <FaTimes />
-          </button>
-        </div>
-
-        <div className="scrollable-container p-4">
-          <ul className="mb-36">
-            {wishlist.map((item) => (
-              <li
-                key={item._id}
-                className="border-b pb-3 flex items-center justify-between px-3 py-2"
-              >
-                <div className="flex items-center gap-2">
-                  <img
-                    src={item.image}
-                    alt={item.product}
-                    className="w-[80px] h-[80px] object-contain"
-                  />
-
-                  <div>
-                    <h3 className="text-[18px] text-[#191919] font-[600] mb-1">
-                      {item.product}
-                    </h3>
-
-                    <p className="text-[15px] text-[#999]">
-                      1kg ={" "}
-                      <span className="text-[#222] font-bold">
-                        ৳{item.price}
-                      </span>
-                    </p>
-                  </div>
+                            <button
+                                type="button"
+                                onClick={handleLogout}
+                            >
+                                <span><IoLogOutOutline /></span>
+                                Logout
+                            </button>
+                        </>
+                    ) : (
+                        <Link
+                            to="/login"
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            <span><FaRegUser /></span>
+                            Sign in / Register
+                        </Link>
+                    )}
                 </div>
 
+                <div className="shopery-mobile-drawer-footer">
+                    Thoughtful shopping. Everyday value.
+                </div>
+            </aside>
+
+            {/* Shared backdrop for shopping drawers */}
+            {(cartOpen || wishListOpen) && (
                 <button
-                  type="button"
-                  onClick={() => handleDeleteWishlistItem(item._id)}
-                  className="text-[#6d5656] text-[23px] p-[6px] border rounded-full"
-                >
-                  <IoCloseOutline />
-                </button>
-              </li>
-            ))}
-          </ul>
+                    type="button"
+                    className="shopery-screen-backdrop shopery-drawer-backdrop"
+                    aria-label="Close shopping panel"
+                    onClick={closeAllPanels}
+                />
+            )}
 
-          {/* Wishlist Footer */}
-          <div className="fixed bottom-0 left-0 w-full p-4 bg-white border-t">
-            <div className="flex flex-col gap-3">
-              <Link
-                onClick={handleCloseWishList}
-                to="/cart"
-                className="px-12 py-3 text-center rounded-[24px] bg-[#00B207] text-white"
-              >
-                Go to Cart
-              </Link>
+            {/* Shopping cart drawer */}
+            <aside
+                className={`shopery-side-drawer ${
+                    cartOpen ? "is-open" : ""
+                }`}
+                aria-hidden={!cartOpen}
+            >
+                <div className="shopery-drawer-header">
+                    <div>
+                        <span className="shopery-drawer-eyebrow">
+                            YOUR SELECTION
+                        </span>
+                        <h2>
+                            Shopping cart
+                            <span className="shopery-drawer-count">
+                                {cartItems.length}
+                            </span>
+                        </h2>
+                    </div>
 
-              <Link
-                onClick={handleCloseWishList}
-                to="/wishlist"
-                className="px-12 py-3 text-center rounded-[24px] bg-[#d2e7d2] text-[#00B207] font-bold"
-              >
-                Go to Wishlist
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
+                    <button
+                        type="button"
+                        className="shopery-close-button"
+                        onClick={() => setCartOpen(false)}
+                        aria-label="Close shopping cart"
+                    >
+                        <FaTimes />
+                    </button>
+                </div>
 
-      {/* ================= PRODUCT SEARCH POPUP ================= */}
-      <ProductSearch
-        isOpen={searchOpen}
-        onClose={handleCloseSearch}
-      />
-    </div>
-  );
+                <div className="shopery-drawer-content">
+                    {cartItems.length === 0 ? (
+                        <div className="shopery-empty-state">
+                            <span className="shopery-empty-icon">
+                                <FaShoppingBag />
+                            </span>
+                            <h3>Your cart is taking a break</h3>
+                            <p>
+                                Explore the shop and find something you love.
+                            </p>
+                            <Link
+                                to="/shop"
+                                className="shopery-primary-button"
+                                onClick={() => setCartOpen(false)}
+                            >
+                                Explore products
+                            </Link>
+                        </div>
+                    ) : (
+                        <div className="shopery-drawer-items">
+                            {cartItems.map((item) => (
+                                <div
+                                    key={item._id}
+                                    className="shopery-drawer-item"
+                                >
+                                    <div className="shopery-item-image">
+                                        <img
+                                            src={
+                                                item.image ||
+                                                item.images?.[0] ||
+                                                ""
+                                            }
+                                            alt={item.product || item.name || "Product"}
+                                        />
+                                    </div>
+
+                                    <div className="shopery-item-info">
+                                        <h3>
+                                            {item.product ||
+                                                item.name ||
+                                                "Product"}
+                                        </h3>
+                                        <p>
+                                            {Number(item.quantity || 1) > 1
+                                                ? `${item.quantity} × `
+                                                : ""}
+                                            ৳{formatPrice(Number(item.price) || 0)}
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        className="shopery-remove-button"
+                                        onClick={() =>
+                                            handleDeleteCartItem(item._id)
+                                        }
+                                        disabled={deletingCartId === item._id}
+                                        aria-label="Remove product from cart"
+                                        title="Remove item"
+                                    >
+                                        {deletingCartId === item._id ? (
+                                            <span className="shopery-mini-spinner" />
+                                        ) : (
+                                            <IoCloseOutline />
+                                        )}
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {cartItems.length > 0 && (
+                    <div className="shopery-drawer-footer">
+                        <div className="shopery-subtotal-row">
+                            <span>Subtotal</span>
+                            <strong>৳{formatPrice(totalPrice)}</strong>
+                        </div>
+
+                        <p className="shopery-shipping-note">
+                            Shipping and any applicable charges are calculated
+                            at checkout.
+                        </p>
+
+                        <Link
+                            to="/checkout"
+                            className="shopery-primary-button"
+                            onClick={() => setCartOpen(false)}
+                        >
+                            Proceed to checkout
+                        </Link>
+
+                        <Link
+                            to="/cart"
+                            className="shopery-secondary-button"
+                            onClick={() => setCartOpen(false)}
+                        >
+                            View full cart
+                        </Link>
+                    </div>
+                )}
+            </aside>
+
+            {/* Wishlist drawer */}
+            <aside
+                className={`shopery-side-drawer ${
+                    wishListOpen ? "is-open" : ""
+                }`}
+                aria-hidden={!wishListOpen}
+            >
+                <div className="shopery-drawer-header">
+                    <div>
+                        <span className="shopery-drawer-eyebrow">
+                            SAVED FOR LATER
+                        </span>
+                        <h2>
+                            Your wishlist
+                            <span className="shopery-drawer-count">
+                                {wishlistItems.length}
+                            </span>
+                        </h2>
+                    </div>
+
+                    <button
+                        type="button"
+                        className="shopery-close-button"
+                        onClick={() => setWishListOpen(false)}
+                        aria-label="Close wishlist"
+                    >
+                        <FaTimes />
+                    </button>
+                </div>
+
+                <div className="shopery-drawer-content">
+                    {wishlistItems.length === 0 ? (
+                        <div className="shopery-empty-state">
+                            <span className="shopery-empty-icon">
+                                <FaRegHeart />
+                            </span>
+                            <h3>Your wishlist is waiting</h3>
+                            <p>
+                                Save your favourite products here for later.
+                            </p>
+                            <Link
+                                to="/shop"
+                                className="shopery-primary-button"
+                                onClick={() => setWishListOpen(false)}
+                            >
+                                Discover products
+                            </Link>
+                        </div>
+                    ) : (
+                        <div className="shopery-drawer-items">
+                            {wishlistItems.map((item) => (
+                                <div
+                                    key={item._id}
+                                    className="shopery-drawer-item"
+                                >
+                                    <div className="shopery-item-image">
+                                        <img
+                                            src={
+                                                item.image ||
+                                                item.images?.[0] ||
+                                                ""
+                                            }
+                                            alt={item.product || item.name || "Product"}
+                                        />
+                                    </div>
+
+                                    <div className="shopery-item-info">
+                                        <h3>
+                                            {item.product ||
+                                                item.name ||
+                                                "Product"}
+                                        </h3>
+                                        <p>
+                                            ৳{formatPrice(Number(item.price) || 0)}
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        className="shopery-remove-button"
+                                        onClick={() =>
+                                            handleDeleteWishlistItem(item._id)
+                                        }
+                                        disabled={
+                                            deletingWishlistId === item._id
+                                        }
+                                        aria-label="Remove product from wishlist"
+                                        title="Remove item"
+                                    >
+                                        {deletingWishlistId === item._id ? (
+                                            <span className="shopery-mini-spinner" />
+                                        ) : (
+                                            <IoCloseOutline />
+                                        )}
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {wishlistItems.length > 0 && (
+                    <div className="shopery-drawer-footer">
+                        <Link
+                            to="/wishlist"
+                            className="shopery-primary-button"
+                            onClick={() => setWishListOpen(false)}
+                        >
+                            View full wishlist
+                        </Link>
+
+                        <Link
+                            to="/shop"
+                            className="shopery-secondary-button"
+                            onClick={() => setWishListOpen(false)}
+                        >
+                            Continue shopping
+                        </Link>
+                    </div>
+                )}
+            </aside>
+
+            {/* Product search */}
+            <ProductSearch
+                isOpen={searchOpen}
+                onClose={() => setSearchOpen(false)}
+            />
+        </header>
+    );
 }
 
 export default Header;

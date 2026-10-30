@@ -1,11 +1,1229 @@
+/* =========================================
+   SHOPERY HEADER — DESIGN SYSTEM
+========================================= */
 
-.navmenu a.active {
-    color: #2C742F; 
-    font-weight: bolder;
+.shopery-header {
+    --shopery-green: #16a34a;
+    --shopery-green-dark: #15803d;
+    --shopery-green-light: #f0fdf4;
+    --shopery-text: #17211a;
+    --shopery-muted: #6b7280;
+    --shopery-border: #e8eee9;
+    --shopery-white: #ffffff;
+
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    background: var(--shopery-white);
+    color: var(--shopery-text);
+    font-family: inherit;
 }
 
+.shopery-header *,
+.shopery-header *::before,
+.shopery-header *::after {
+    box-sizing: border-box;
+}
 
-.scrollable-container {
-    max-height: 80vh; /* Adjust the height as needed */
+.shopery-container {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding-left: 32px;
+    padding-right: 32px;
+}
+
+/* =========================================
+   ANNOUNCEMENT BAR
+========================================= */
+
+.shopery-announcement {
+    background: #f2f8f3;
+    border-bottom: 1px solid #e6f0e7;
+}
+
+.shopery-announcement-inner {
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.shopery-announcement-inner p {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: #386b45;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1px;
+}
+
+.shopery-announcement-inner p svg {
+    font-size: 17px;
+    flex-shrink: 0;
+}
+
+.shopery-announcement-note {
+    color: #728176;
+    font-size: 11px;
+}
+
+/* =========================================
+   MAIN HEADER
+========================================= */
+
+.shopery-main-header {
+    position: relative;
+    background: #fff;
+    border-bottom: 1px solid #edf1ed;
+}
+
+.shopery-header-main-inner {
+    min-height: 84px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+}
+
+.shopery-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    color: var(--shopery-text);
+    text-decoration: none;
+}
+
+.shopery-brand-mark {
+    width: 43px;
+    height: 43px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: var(--shopery-green);
+    color: #fff;
+    font-size: 26px;
+    box-shadow: 0 5px 14px rgb(22 163 74 / 17%);
+    transition:
+        transform 0.25s ease,
+        border-radius 0.25s ease;
+}
+
+.shopery-brand:hover .shopery-brand-mark {
+    transform: rotate(-7deg);
+    border-radius: 50%;
+}
+
+.shopery-brand-text {
+    font-size: 29px;
+    line-height: 1;
+    font-weight: 850;
+    letter-spacing: -1.3px;
+}
+
+.shopery-brand-dot {
+    color: var(--shopery-green);
+}
+
+/* =========================================
+   DESKTOP NAVIGATION
+========================================= */
+
+.shopery-desktop-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 27px;
+    flex: 1;
+}
+
+.shopery-nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 0;
+    color: #59635c;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+}
+
+.shopery-nav-link::after {
+    position: absolute;
+    right: 0;
+    bottom: 2px;
+    left: 0;
+    height: 2px;
+    border-radius: 10px;
+    background: var(--shopery-green);
+    content: "";
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.22s ease;
+}
+
+.shopery-nav-link:hover,
+.shopery-nav-link.active {
+    color: var(--shopery-green-dark);
+}
+
+.shopery-nav-link:hover::after,
+.shopery-nav-link.active::after {
+    transform: scaleX(1);
+}
+
+/* =========================================
+   HEADER ACTIONS
+========================================= */
+
+.shopery-header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 9px;
+    flex-shrink: 0;
+}
+
+.shopery-icon-button {
+    position: relative;
+    width: 41px;
+    height: 41px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    background: transparent;
+    color: #27332a;
+    font-size: 19px;
+    cursor: pointer;
+    transition:
+        color 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.shopery-icon-button:hover {
+    border-color: #d8f0de;
+    background: var(--shopery-green-light);
+    color: var(--shopery-green-dark);
+}
+
+.shopery-search-symbol {
+    display: inline-block;
+    font-family: Arial, sans-serif;
+    font-size: 31px;
+    font-weight: 400;
+    line-height: 1;
+    transform: rotate(-20deg);
+}
+
+.shopery-icon-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+    border-radius: 20px;
+    background: var(--shopery-green);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+/* =========================================
+   ACCOUNT BUTTON AND DROPDOWN
+========================================= */
+
+.shopery-account-area {
+    position: relative;
+    margin-left: 5px;
+}
+
+.shopery-account-button {
+    max-width: 160px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 5px 10px 5px 5px;
+    border: 1px solid var(--shopery-border);
+    border-radius: 30px;
+    background: #fff;
+    color: #27332a;
+    cursor: pointer;
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.shopery-account-button:hover,
+.shopery-account-button.is-open {
+    border-color: #b8e5c3;
+    background: #f7fcf8;
+}
+
+.shopery-account-button img {
+    width: 31px;
+    height: 31px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.shopery-account-label {
+    overflow: hidden;
+    font-size: 12px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.shopery-login-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 15px;
+    border: 1px solid #d7eadd;
+    border-radius: 24px;
+    background: #f7fcf8;
+    color: var(--shopery-green-dark);
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.shopery-login-button:hover {
+    background: var(--shopery-green);
+    color: #fff;
+}
+
+.shopery-user-dropdown {
+    position: absolute;
+    top: calc(100% + 13px);
+    right: 0;
+    z-index: 130;
+    width: 290px;
+    overflow: hidden;
+    border: 1px solid #e7eee8;
+    border-radius: 17px;
+    background: #fff;
+    box-shadow: 0 18px 50px rgb(20 40 25 / 13%);
+    animation: shopery-dropdown-in 0.18s ease;
+}
+
+@keyframes shopery-dropdown-in {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.shopery-user-summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 17px;
+    border-bottom: 1px solid #edf1ed;
+}
+
+.shopery-user-summary img {
+    width: 47px;
+    height: 47px;
+    flex-shrink: 0;
+    border: 2px solid #d9f4df;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.shopery-user-name {
+    overflow: hidden;
+    margin: 0 0 5px;
+    color: #18251b;
+    font-size: 14px;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.shopery-user-email {
+    overflow: hidden;
+    margin: 0;
+    color: #818a83;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.shopery-dropdown-link {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border: 0;
+    background: #fff;
+    color: #354239;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.shopery-dropdown-link svg {
+    flex-shrink: 0;
+    font-size: 19px;
+}
+
+.shopery-dropdown-link:hover {
+    background: #f1faf3;
+    color: var(--shopery-green-dark);
+}
+
+.shopery-logout-button {
+    border-top: 1px solid #edf1ed;
+    color: #c24141;
+}
+
+.shopery-logout-button:hover {
+    background: #fff5f5;
+    color: #b91c1c;
+}
+
+/* =========================================
+   MOBILE MENU BUTTON
+========================================= */
+
+.shopery-mobile-menu-button {
+    width: 41px;
+    height: 41px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--shopery-border);
+    border-radius: 50%;
+    background: #fff;
+    color: #26352a;
+    font-size: 18px;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.shopery-mobile-menu-button:hover {
+    background: var(--shopery-green-light);
+    color: var(--shopery-green-dark);
+}
+
+/* =========================================
+   BACKDROP
+========================================= */
+
+.shopery-screen-backdrop {
+    position: fixed;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: rgb(13 23 15 / 43%);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.shopery-menu-backdrop {
+    z-index: 105;
+}
+
+.shopery-drawer-backdrop {
+    z-index: 150;
+    animation: shopery-backdrop-in 0.2s ease;
+}
+
+@keyframes shopery-backdrop-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* =========================================
+   MOBILE NAVIGATION DRAWER
+========================================= */
+
+.shopery-mobile-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 110;
+    width: min(360px, 88vw);
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
-  }
+    background: #fff;
+    box-shadow: -12px 0 45px rgb(0 0 0 / 8%);
+    transform: translateX(105%);
+    visibility: hidden;
+    transition:
+        transform 0.3s ease,
+        visibility 0.3s ease;
+}
+
+.shopery-mobile-drawer.is-open {
+    transform: translateX(0);
+    visibility: visible;
+}
+
+.shopery-mobile-drawer-heading {
+    min-height: 79px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 21px;
+    border-bottom: 1px solid var(--shopery-border);
+}
+
+.shopery-mobile-drawer-heading .shopery-brand-mark {
+    width: 37px;
+    height: 37px;
+    border-radius: 11px;
+    font-size: 22px;
+}
+
+.shopery-mobile-drawer-heading .shopery-brand-text {
+    font-size: 25px;
+}
+
+.shopery-close-button {
+    width: 39px;
+    height: 39px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid #e9eee9;
+    border-radius: 50%;
+    background: #fff;
+    color: #465148;
+    font-size: 16px;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.shopery-close-button:hover {
+    background: #f0fdf4;
+    color: var(--shopery-green-dark);
+}
+
+.shopery-mobile-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 21px;
+    border-bottom: 1px solid var(--shopery-border);
+    background: #f8fcf9;
+}
+
+.shopery-mobile-user img {
+    width: 45px;
+    height: 45px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.shopery-mobile-user p {
+    margin: 0 0 5px;
+    color: #17251a;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.shopery-mobile-user span {
+    display: block;
+    overflow-wrap: anywhere;
+    color: #7a857d;
+    font-size: 11px;
+}
+
+.shopery-mobile-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 17px 20px;
+}
+
+.shopery-mobile-nav .shopery-nav-link {
+    padding: 15px 3px;
+    border-bottom: 1px solid #f0f3f0;
+    font-size: 14px;
+}
+
+.shopery-mobile-nav .shopery-nav-link::after {
+    display: none;
+}
+
+.shopery-mobile-nav .shopery-nav-link.active {
+    color: var(--shopery-green-dark);
+    font-weight: 800;
+}
+
+.shopery-mobile-shortcuts {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 5px 20px 20px;
+}
+
+.shopery-mobile-shortcuts > button,
+.shopery-mobile-shortcuts > a {
+    width: 100%;
+    min-height: 47px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 3px;
+    border: 0;
+    background: transparent;
+    color: #39473d;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.shopery-mobile-shortcuts > button:hover,
+.shopery-mobile-shortcuts > a:hover {
+    color: var(--shopery-green-dark);
+}
+
+.shopery-mobile-shortcuts > button > span:first-child,
+.shopery-mobile-shortcuts > a > span:first-child {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background: #effaf1;
+    color: var(--shopery-green-dark);
+    font-size: 16px;
+}
+
+.shopery-shortcut-count {
+    min-width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    border-radius: 50%;
+    background: #e7f8eb;
+    color: var(--shopery-green-dark);
+    font-size: 11px;
+}
+
+.shopery-mobile-drawer-footer {
+    margin-top: auto;
+    padding: 18px 20px;
+    border-top: 1px solid var(--shopery-border);
+    background: #f7fbf8;
+    color: #78877b;
+    font-size: 11px;
+    text-align: center;
+}
+
+/* =========================================
+   CART AND WISHLIST DRAWERS
+========================================= */
+
+.shopery-side-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 160;
+    width: min(440px, 100vw);
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: -12px 0 45px rgb(0 0 0 / 10%);
+    transform: translateX(105%);
+    visibility: hidden;
+    transition:
+        transform 0.3s ease,
+        visibility 0.3s ease;
+}
+
+.shopery-side-drawer.is-open {
+    transform: translateX(0);
+    visibility: visible;
+}
+
+.shopery-drawer-header {
+    min-height: 94px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--shopery-border);
+    background: #fff;
+}
+
+.shopery-drawer-eyebrow {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--shopery-green-dark);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.shopery-drawer-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    color: #17251a;
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: -0.6px;
+}
+
+.shopery-drawer-count {
+    min-width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    border-radius: 50%;
+    background: #eaf8ed;
+    color: var(--shopery-green-dark);
+    font-size: 11px;
+    letter-spacing: 0;
+}
+
+.shopery-drawer-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.shopery-drawer-items {
+    padding: 4px 22px 20px;
+}
+
+.shopery-drawer-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 18px 0;
+    border-bottom: 1px solid #edf1ed;
+}
+
+.shopery-item-image {
+    width: 77px;
+    height: 77px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    border: 1px solid #edf1ed;
+    border-radius: 12px;
+    background: #f8faf8;
+}
+
+.shopery-item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.shopery-item-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.shopery-item-info h3 {
+    display: -webkit-box;
+    overflow: hidden;
+    margin: 0 0 8px;
+    color: #26342a;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.shopery-item-info p {
+    margin: 0;
+    color: var(--shopery-green-dark);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.shopery-remove-button {
+    width: 31px;
+    height: 31px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid #edf0ed;
+    border-radius: 50%;
+    background: #fff;
+    color: #909991;
+    font-size: 19px;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.shopery-remove-button:hover:not(:disabled) {
+    border-color: #fee2e2;
+    background: #fff1f1;
+    color: #dc2626;
+}
+
+.shopery-remove-button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.shopery-mini-spinner {
+    width: 13px;
+    height: 13px;
+    border: 2px solid #e5e7eb;
+    border-top-color: var(--shopery-green);
+    border-radius: 50%;
+    animation: shopery-spin 0.7s linear infinite;
+}
+
+@keyframes shopery-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Drawer footer stays inside its own panel */
+
+.shopery-drawer-footer {
+    position: relative;
+    flex-shrink: 0;
+    padding: 20px 24px calc(20px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--shopery-border);
+    background: #fff;
+    box-shadow: 0 -8px 20px rgb(20 40 25 / 3%);
+}
+
+.shopery-subtotal-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 8px;
+}
+
+.shopery-subtotal-row span {
+    color: #6c776e;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.shopery-subtotal-row strong {
+    color: #17251a;
+    font-size: 21px;
+    font-weight: 850;
+}
+
+.shopery-shipping-note {
+    margin: 0 0 17px;
+    color: #8a938c;
+    font-size: 10px;
+    line-height: 1.6;
+}
+
+.shopery-primary-button,
+.shopery-secondary-button {
+    width: 100%;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 17px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    font-size: 13px;
+    font-weight: 750;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.shopery-primary-button {
+    background: var(--shopery-green);
+    color: #fff;
+}
+
+.shopery-primary-button:hover {
+    background: var(--shopery-green-dark);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.shopery-secondary-button {
+    margin-top: 9px;
+    border-color: #dfeae1;
+    background: #fff;
+    color: #3e6a48;
+}
+
+.shopery-secondary-button:hover {
+    border-color: #b7dfc0;
+    background: #f5fbf6;
+}
+
+/* =========================================
+   EMPTY STATES
+========================================= */
+
+.shopery-empty-state {
+    min-height: 360px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 35px 28px;
+    text-align: center;
+}
+
+.shopery-empty-icon {
+    width: 76px;
+    height: 76px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 21px;
+    border-radius: 24px;
+    background: #effaf1;
+    color: var(--shopery-green-dark);
+    font-size: 30px;
+}
+
+.shopery-empty-state h3 {
+    margin: 0 0 9px;
+    color: #203025;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.shopery-empty-state p {
+    max-width: 270px;
+    margin: 0 0 23px;
+    color: #808a82;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.shopery-empty-state .shopery-primary-button {
+    max-width: 230px;
+}
+
+/* =========================================
+   ACCESSIBILITY AND SCROLLBARS
+========================================= */
+
+.shopery-header button:focus-visible,
+.shopery-header a:focus-visible {
+    outline: 3px solid rgb(22 163 74 / 35%);
+    outline-offset: 3px;
+}
+
+.shopery-drawer-content,
+.shopery-mobile-drawer {
+    scrollbar-width: thin;
+    scrollbar-color: #d4e3d6 transparent;
+}
+
+.shopery-drawer-content::-webkit-scrollbar,
+.shopery-mobile-drawer::-webkit-scrollbar {
+    width: 5px;
+}
+
+.shopery-drawer-content::-webkit-scrollbar-thumb,
+.shopery-mobile-drawer::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: #d4e3d6;
+}
+
+/* =========================================
+   RESPONSIVE BREAKPOINTS
+========================================= */
+
+@media (max-width: 1100px) {
+    .shopery-container {
+        padding-right: 23px;
+        padding-left: 23px;
+    }
+
+    .shopery-header-main-inner {
+        gap: 18px;
+    }
+
+    .shopery-brand-text {
+        font-size: 26px;
+    }
+
+    .shopery-brand-mark {
+        width: 39px;
+        height: 39px;
+        font-size: 23px;
+    }
+
+    .shopery-desktop-nav {
+        gap: 18px;
+    }
+
+    .shopery-nav-link {
+        font-size: 13px;
+    }
+
+    .shopery-header-actions {
+        gap: 4px;
+    }
+}
+
+@media (max-width: 900px) {
+    .shopery-announcement-note {
+        display: none;
+    }
+
+    .shopery-header-main-inner {
+        min-height: 76px;
+    }
+
+    .shopery-desktop-nav {
+        display: none;
+    }
+
+    .shopery-mobile-menu-button {
+        display: inline-flex;
+    }
+
+    .shopery-header-actions {
+        margin-left: auto;
+    }
+
+    .shopery-account-area {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 600px) {
+    .shopery-container {
+        padding-right: 16px;
+        padding-left: 16px;
+    }
+
+    .shopery-announcement-inner {
+        min-height: 32px;
+        justify-content: center;
+    }
+
+    .shopery-announcement-inner p {
+        gap: 6px;
+        font-size: 10px;
+    }
+
+    .shopery-announcement-inner p svg {
+        font-size: 15px;
+    }
+
+    .shopery-header-main-inner {
+        min-height: 68px;
+        gap: 8px;
+    }
+
+    .shopery-brand {
+        gap: 7px;
+    }
+
+    .shopery-brand-mark {
+        width: 35px;
+        height: 35px;
+        border-radius: 11px;
+        font-size: 21px;
+    }
+
+    .shopery-brand-text {
+        font-size: 23px;
+        letter-spacing: -1px;
+    }
+
+    .shopery-header-actions {
+        gap: 1px;
+    }
+
+    .shopery-icon-button {
+        width: 35px;
+        height: 38px;
+        font-size: 16px;
+    }
+
+    .shopery-search-symbol {
+        font-size: 28px;
+    }
+
+    .shopery-icon-badge {
+        top: 0;
+        right: -1px;
+        min-width: 16px;
+        height: 16px;
+        font-size: 8px;
+    }
+
+    .shopery-account-button {
+        width: 35px;
+        height: 35px;
+        justify-content: center;
+        padding: 2px;
+        border-color: transparent;
+        background: transparent;
+    }
+
+    .shopery-account-button img {
+        width: 30px;
+        height: 30px;
+    }
+
+    .shopery-account-label {
+        display: none;
+    }
+
+    .shopery-login-button {
+        width: 35px;
+        min-height: 35px;
+        padding: 0;
+        border-color: transparent;
+        background: transparent;
+        font-size: 16px;
+    }
+
+    .shopery-login-button span {
+        display: none;
+    }
+
+    .shopery-mobile-menu-button {
+        width: 35px;
+        height: 35px;
+        font-size: 16px;
+    }
+
+    .shopery-user-dropdown {
+        position: fixed;
+        top: 112px;
+        right: 12px;
+        width: min(290px, calc(100vw - 24px));
+    }
+
+    .shopery-drawer-header {
+        min-height: 83px;
+        padding: 16px 17px;
+    }
+
+    .shopery-drawer-header h2 {
+        font-size: 19px;
+    }
+
+    .shopery-drawer-items {
+        padding-right: 16px;
+        padding-left: 16px;
+    }
+
+    .shopery-drawer-item {
+        gap: 10px;
+        padding: 15px 0;
+    }
+
+    .shopery-item-image {
+        width: 67px;
+        height: 67px;
+    }
+
+    .shopery-item-info h3 {
+        font-size: 12px;
+    }
+
+    .shopery-item-info p {
+        font-size: 12px;
+    }
+
+    .shopery-drawer-footer {
+        padding: 16px 17px calc(16px + env(safe-area-inset-bottom));
+    }
+
+    .shopery-subtotal-row strong {
+        font-size: 19px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shopery-header *,
+    .shopery-header *::before,
+    .shopery-header *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

@@ -1,5 +1,5 @@
-.shop_banner{
-    background: url(https://i.ibb.co/gtPgwD3/Breadcrumbs.png);
+.shop_banner {
+    background: url("https://i.ibb.co/gtPgwD3/Breadcrumbs.png");
     background-attachment: fixed;
     background-repeat: no-repeat;
     background-position: center;
@@ -9,9 +9,9 @@
     padding: 50px 7%;
 }
 
-.shop_banner::after{
+.shop_banner::after {
     position: absolute;
-    content: '';
+    content: "";
     height: 100%;
     width: 100%;
     left: 0;
@@ -19,26 +19,29 @@
     top: 0;
     bottom: 0;
     background-color: #122033dc;
-    opacity: .7;
+    opacity: 0.7;
     z-index: -1;
 }
 
-
-
-/* cart.css */
 .cart-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.cart-table th, .cart-table td {
+.cart-table th,
+.cart-table td {
     padding: 15px;
     text-align: left;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .cart-table th {
-    background-color: #f2f2f2;
+    background-color: #f8faf8;
+    color: #555;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 .cart-total {
@@ -55,49 +58,35 @@
     display: block;
     width: 100%;
     text-align: center;
-    background-color: #00B207;
+    background-color: #00b207;
     color: white;
-    padding: 10px;
+    padding: 12px 16px;
     border: none;
-    border-radius: 5px;
+    border-radius: 999px;
     cursor: pointer;
-    font-size: 18px;
+    font-size: 15px;
+    font-weight: 700;
     margin-top: 10px;
     text-decoration: none;
+    transition: background-color 0.2s ease;
 }
 
 .proceed-to-checkout:hover {
-    background-color: #008A05;
+    background-color: #008a05;
 }
 
-/* Responsive styles */
 @media (max-width: 768px) {
-    .cart-table thead {
-        display: none;
+    .shop_banner {
+        background-attachment: scroll;
     }
 
-    .cart-table, .cart-table tbody, .cart-table tr, .cart-table td {
-        display: block;
-        width: 100%;
+    .cart-table {
+        min-width: 650px;
     }
+}
 
-    .cart-table tr {
-        margin-bottom: 15px;
-    }
-
-    .cart-table td {
-        text-align: right;
-        padding-left: 50%;
-        position: relative;
-    }
-
-    .cart-table td::before {
-        content: attr(data-label);
-        position: absolute;
-        left: 0;
-        width: 50%;
-        padding-left: 15px;
-        font-weight: bold;
-        text-align: left;
+@media (prefers-reduced-motion: reduce) {
+    .proceed-to-checkout {
+        transition: none;
     }
 }

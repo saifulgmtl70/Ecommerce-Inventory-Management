@@ -19,7 +19,7 @@ import {
     FiArrowUpRight,
 } from "react-icons/fi";
 
-import Newsletter from "../Shop/Products/Newsletter";
+//import Newsletter from "../Shop/Products/Newsletter";
 
 import "./contact.css";
 
@@ -777,7 +777,7 @@ const Contact = () => {
                 NEWSLETTER
             ===================================== */}
 
-            <Newsletter />
+            
 
         </main>
     );

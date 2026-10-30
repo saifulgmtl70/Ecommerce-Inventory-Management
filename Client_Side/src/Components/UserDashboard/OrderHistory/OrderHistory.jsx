@@ -1,327 +1,280 @@
-
 import { Fragment, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { MdCancel } from "react-icons/md";
-
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
 import { Helmet } from "react-helmet-async";
+import { toast } from "react-toastify";
+import {
+    HiOutlineClipboardList,
+    HiOutlineRefresh,
+} from "react-icons/hi";
+import { MdCancel } from "react-icons/md";
 
 import useAuth from "../../Hooks/useAuth";
 import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
 import OrderTracking from "./OrderTracking";
 
+const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+
+    const date = new Date(dateString);
+
+    if (Number.isNaN(date.getTime())) return "N/A";
+
+    return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    });
+};
+
+const getStatusClass = (status) => {
+    const normalized = (status || "pending")
+        .toLowerCase()
+        .replaceAll(" ", "_");
+
+    return `dashboard-status dashboard-status-${normalized}`;
+};
+
 const OrderHistory = () => {
     const { user, loading } = useAuth();
-
     const axiosSecure = useAxiosSecure();
-
     const [cancellingId, setCancellingId] = useState(null);
-
-    // =====================================
-    // GET LOGGED-IN USER'S ORDER HISTORY
-    // =====================================
 
     const {
         data: orders = [],
         refetch,
         isLoading,
-        isError
+        isFetching,
+        isError,
     } = useQuery({
         queryKey: ["orders", user?.email],
-
         enabled: !loading && !!user?.email,
-
         queryFn: async () => {
-            const response = await axiosSecure.get(
-                `/orders?email=${encodeURIComponent(user.email)}`
-            );
+            const response = await axiosSecure.get("/orders", {
+                params: { email: user.email },
+            });
 
-            return response.data;
+            return Array.isArray(response.data) ? response.data : [];
         },
-
-        // Automatically refresh order status every 10 seconds.
         refetchInterval: 10000,
-
-        // Do not poll when the browser tab is in the background.
-        refetchIntervalInBackground: false
+        refetchIntervalInBackground: false,
     });
 
-    // =====================================
-    // FORMAT ORDER DATE
-    // =====================================
+    const handleCancelOrder = async (order) => {
+        const status = (order.status || "pending").toLowerCase();
 
-    const formatDate = (dateString) => {
-        if (!dateString) {
-            return "N/A";
-        }
-
-        const date = new Date(dateString);
-
-        if (Number.isNaN(date.getTime())) {
-            return "N/A";
-        }
-
-        const options = {
-            day: "numeric",
-            month: "long",
-            year: "numeric"
-        };
-
-        return date.toLocaleDateString("en-US", options);
-    };
-
-    // =====================================
-    // CANCEL ORDER
-    // =====================================
-
-    const handleCancelOrder = async (id) => {
-        const confirmCancel = window.confirm(
-            "Are you sure you want to cancel this order?"
-        );
-
-        if (!confirmCancel) {
+        if (status !== "pending") {
+            toast.info("Only pending orders can be cancelled.");
             return;
         }
 
+        const confirmed = window.confirm(
+            "Are you sure you want to cancel this order?"
+        );
+
+        if (!confirmed) return;
+
         try {
-            setCancellingId(id);
+            setCancellingId(order._id);
 
             const response = await axiosSecure.patch(
-                `/orders/${id}/cancel`
+                `/orders/${order._id}/cancel`
             );
 
-            if (response.data.modifiedCount > 0) {
-                toast.success(
-                    "Your order has been cancelled successfully!",
-                    {
-                        position: "top-center",
-                        autoClose: 3000
-                    }
-                );
-
+            if (response.status >= 200 && response.status < 300) {
+                toast.success("Your order has been cancelled successfully.");
                 await refetch();
             } else {
                 toast.error(
-                    response.data.message || "Unable to cancel this order.",
-                    {
-                        position: "top-center",
-                        autoClose: 3000
-                    }
+                    response.data?.message || "Unable to cancel this order."
                 );
-
-                await refetch();
             }
         } catch (error) {
-            console.error("Order cancellation failed:", error);
+            console.error(
+                "Order cancellation failed:",
+                error.response?.data || error.message
+            );
 
             toast.error(
                 error.response?.data?.message ||
-                "Failed to cancel order!",
-                {
-                    position: "top-center",
-                    autoClose: 3000
-                }
+                    "Failed to cancel your order. Please try again."
             );
         } finally {
             setCancellingId(null);
         }
     };
 
-    // =====================================
-    // ORDER STATUS STYLE
-    // =====================================
+    if (loading || (!user && loading)) {
+        return (
+            <div className="dashboard-card dashboard-empty-state">
+                Loading your account...
+            </div>
+        );
+    }
 
-    const getStatusStyle = (status) => {
-        switch (status?.toLowerCase()) {
-            case "pending":
-                return "bg-yellow-100 text-yellow-700";
-
-            case "confirmed":
-                return "bg-sky-100 text-sky-700";
-
-            case "processing":
-                return "bg-blue-100 text-blue-700";
-
-            case "packed":
-                return "bg-indigo-100 text-indigo-700";
-
-            case "shipped":
-                return "bg-purple-100 text-purple-700";
-
-            case "out_for_delivery":
-                return "bg-orange-100 text-orange-700";
-
-            case "delivered":
-                return "bg-green-100 text-green-700";
-
-            case "cancelled":
-                return "bg-red-100 text-red-700";
-
-            default:
-                return "bg-gray-100 text-gray-700";
-        }
-    };
-
-    // =====================================
-    // ORDER HISTORY UI
-    // =====================================
+    if (!user) {
+        return (
+            <div className="dashboard-card dashboard-empty-state">
+                Please log in to view your orders.
+            </div>
+        );
+    }
 
     return (
-        <div className="h-auto">
+        <section>
             <Helmet>
                 <title>Shopery | Order History</title>
             </Helmet>
 
-            <ToastContainer />
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <p className="mb-1 text-sm font-semibold text-green-700">
+                        YOUR SHOPPING ACTIVITY
+                    </p>
 
-            <div className="w-full mb-8 overflow-x-auto rounded-[6px] border shadow-sm">
-                <div className="w-full min-w-[750px]">
+                    <h2 className="dashboard-section-title mb-2">
+                        Order History
+                    </h2>
 
-                    {/* TABLE HEADER */}
+                    <p className="dashboard-muted-text">
+                        View your orders, check their status and track deliveries.
+                    </p>
+                </div>
 
-                    <div className="flex items-center justify-between gap-4 p-4">
-                        <h2 className="text-[18px] font-bold text-[#222]">
-                            Recent Order History
-                        </h2>
+                <button
+                    type="button"
+                    onClick={() => refetch()}
+                    disabled={isFetching}
+                    className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-gray-700 transition hover:border-green-500 hover:text-green-700 disabled:opacity-50"
+                >
+                    <HiOutlineRefresh
+                        className={isFetching ? "animate-spin" : ""}
+                    />
+                    Refresh
+                </button>
+            </div>
 
-                        <h2 className="text-[18px] font-bold text-[#00B307]">
-                            Total Orders: {orders.length}
-                        </h2>
+            <div className="dashboard-card overflow-hidden">
+                <div className="dashboard-card-heading">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-50 text-2xl text-green-700">
+                            <HiOutlineClipboardList />
+                        </div>
+
+                        <div>
+                            <h2>All Orders</h2>
+                            <p className="mt-1 text-xs text-gray-500">
+                                {orders.length} {orders.length === 1 ? "order" : "orders"} found
+                            </p>
+                        </div>
                     </div>
 
-                    {/* LOADING */}
+                    <span className="rounded-full bg-green-50 px-3 py-1.5 text-xs font-extrabold text-green-700">
+                        Auto-refresh: 10s
+                    </span>
+                </div>
 
-                    {(loading || isLoading) ? (
-                        <div className="py-12 text-center text-gray-500">
-                            Loading your order history...
-                        </div>
-                    ) : !user ? (
-                        <div className="py-12 text-center text-gray-500">
-                            Please log in to view your orders.
-                        </div>
-                    ) : isError ? (
-                        <div className="py-12 text-center text-red-500">
-                            Failed to load order history. Please try again.
-                            <br />
+                {loading || isLoading ? (
+                    <div className="dashboard-empty-state">
+                        Loading your order history...
+                    </div>
+                ) : isError ? (
+                    <div className="dashboard-empty-state">
+                        <p className="mb-3 text-red-600">
+                            Failed to load order history.
+                        </p>
 
-                            <button
-                                type="button"
-                                onClick={() => refetch()}
-                                className="mt-3 rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
-                            >
-                                Try Again
-                            </button>
-                        </div>
-                    ) : orders.length === 0 ? (
-                        <div className="py-12 text-center text-gray-500">
-                            You haven't placed any orders yet.
-                        </div>
-                    ) : (
-                        <table className="w-full">
+                        <button
+                            type="button"
+                            onClick={() => refetch()}
+                            className="rounded-full bg-green-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-green-700"
+                        >
+                            Try again
+                        </button>
+                    </div>
+                ) : orders.length === 0 ? (
+                    <div className="dashboard-empty-state">
+                        <HiOutlineClipboardList className="mx-auto mb-3 text-4xl text-gray-300" />
+
+                        <h3 className="mb-2 font-bold text-gray-700">
+                            No orders yet
+                        </h3>
+
+                        <p className="mb-4">
+                            Your placed orders will appear here.
+                        </p>
+
+                        <a
+                            href="/"
+                            className="inline-flex rounded-full bg-green-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-green-700"
+                        >
+                            Start shopping
+                        </a>
+                    </div>
+                ) : (
+                    <div className="dashboard-table-wrapper">
+                        <table className="dashboard-table min-w-[680px]">
                             <thead>
-                                <tr className="bg-[#F2F2F2] text-left text-[15px] font-semibold tracking-wide text-[#111]">
-                                    <th className="px-4 py-3 uppercase">
-                                        #Order ID
-                                    </th>
-
-                                    <th className="px-4 py-3 uppercase">
-                                        Date
-                                    </th>
-
-                                    <th className="px-4 py-3 uppercase">
-                                        Total
-                                    </th>
-
-                                    <th className="px-4 py-3 uppercase">
-                                        Status
-                                    </th>
-
-                                    <th className="px-4 py-3 uppercase">
-                                        Action
-                                    </th>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Order Date</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th className="text-center">Action</th>
                                 </tr>
                             </thead>
 
-                            <tbody className="bg-white">
+                            <tbody>
                                 {orders.map((order) => {
-                                    const orderStatus = (
+                                    const status = (
                                         order.status || "pending"
                                     ).toLowerCase();
 
                                     return (
                                         <Fragment key={order._id}>
-                                            {/* MAIN ORDER ROW */}
-
-                                            <tr className="border-b text-gray-700">
-                                                {/* ORDER ID */}
-
-                                                <td className="px-4 py-3">
-                                                    <h3 className="break-all text-[14px] font-semibold text-[#191919]">
-                                                        {order._id}
-                                                    </h3>
-                                                </td>
-
-                                                {/* ORDER DATE */}
-
-                                                <td className="px-4 py-3 text-sm font-semibold">
-                                                    {formatDate(order.createdAt)}
-                                                </td>
-
-                                                {/* TOTAL PRICE */}
-
-                                                <td className="px-4 py-3 text-sm font-semibold">
-                                                    <div className="flex items-center justify-center">
-                                                        ৳
-                                                        {Number(
-                                                            order.totalPrice || 0
-                                                        ).toFixed(2)}
-                                                    </div>
-                                                </td>
-
-                                                {/* ORDER STATUS */}
-
-                                                <td className="px-4 py-3">
+                                            <tr>
+                                                <td>
                                                     <span
-                                                        className={`inline-block whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold capitalize ${getStatusStyle(orderStatus)}`}
+                                                        className="block max-w-[140px] break-all font-bold text-gray-800"
+                                                        title={order._id}
                                                     >
-                                                        {orderStatus.replaceAll(
-                                                            "_",
-                                                            " "
-                                                        )}
+                                                        #{String(order._id).slice(-8).toUpperCase()}
                                                     </span>
                                                 </td>
 
-                                                {/* CANCEL ORDER */}
+                                                <td className="whitespace-nowrap">
+                                                    {formatDate(order.createdAt)}
+                                                </td>
 
-                                                <td className="px-4 py-3">
-                                                    <div className="flex items-center justify-center">
-                                                        {orderStatus === "pending" ? (
-                                                            <div
-                                                                className="tooltip"
-                                                                data-tip="Cancel Order"
+                                                <td className="whitespace-nowrap font-bold text-gray-800">
+                                                    ৳{Number(order.totalPrice || 0).toFixed(2)}
+                                                </td>
+
+                                                <td>
+                                                    <span className={getStatusClass(status)}>
+                                                        {status.replaceAll("_", " ")}
+                                                    </span>
+                                                </td>
+
+                                                <td>
+                                                    <div className="flex justify-center">
+                                                        {status === "pending" ? (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    handleCancelOrder(order)
+                                                                }
+                                                                disabled={
+                                                                    cancellingId === order._id
+                                                                }
+                                                                title="Cancel order"
+                                                                aria-label="Cancel order"
+                                                                className="rounded-lg p-2 text-xl text-gray-400 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
                                                             >
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() =>
-                                                                        handleCancelOrder(
-                                                                            order._id
-                                                                        )
-                                                                    }
-                                                                    disabled={
-                                                                        cancellingId ===
-                                                                        order._id
-                                                                    }
-                                                                    aria-label="Cancel order"
-                                                                    className="text-[20px] font-bold text-[#00B207] disabled:cursor-not-allowed disabled:opacity-50 lg:text-[25px]"
-                                                                >
-                                                                    <MdCancel />
-                                                                </button>
-                                                            </div>
+                                                                <MdCancel />
+                                                            </button>
                                                         ) : (
-                                                            <span className="text-sm text-gray-400">
+                                                            <span className="text-gray-300">
                                                                 —
                                                             </span>
                                                         )}
@@ -329,31 +282,27 @@ const OrderHistory = () => {
                                                 </td>
                                             </tr>
 
-                                            {/* ORDER TRACKING ROW */}
-
-                                            <tr className="border-b bg-gray-50">
-                                                <td
-                                                    colSpan={5}
-                                                    className="px-4 py-3"
-                                                >
+                                            <tr>
+                                                <td colSpan={5} className="!p-3 !bg-gray-50">
                                                     <details className="group">
-                                                        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-md border bg-white px-4 py-3 font-semibold text-gray-700 transition hover:border-green-500 hover:text-green-700">
+                                                        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 transition hover:border-green-400 hover:text-green-700">
                                                             <span>
-                                                                Track Your Order
+                                                                Track order{" "}
+                                                                <span className="ml-1 text-xs font-normal text-gray-400">
+                                                                    #{String(order._id).slice(-8).toUpperCase()}
+                                                                </span>
                                                             </span>
 
-                                                            <span className="text-sm text-green-600 group-open:hidden">
-                                                                + View Tracking
+                                                            <span className="text-xs font-bold text-green-700 group-open:hidden">
+                                                                + View tracking
                                                             </span>
 
-                                                            <span className="hidden text-sm text-green-600 group-open:inline">
-                                                                − Hide Tracking
+                                                            <span className="hidden text-xs font-bold text-green-700 group-open:inline">
+                                                                − Hide tracking
                                                             </span>
                                                         </summary>
 
-                                                        <OrderTracking
-                                                            status={orderStatus}
-                                                        />
+                                                        <OrderTracking status={status} />
                                                     </details>
                                                 </td>
                                             </tr>
@@ -362,10 +311,10 @@ const OrderHistory = () => {
                                 })}
                             </tbody>
                         </table>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
-        </div>
+        </section>
     );
 };
 

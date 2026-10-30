@@ -1,397 +1,343 @@
+import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { Helmet } from "react-helmet-async";
+import { toast } from "react-toastify";
+import { HiOutlineUser, HiOutlineLocationMarker, HiOutlineClipboardList, HiOutlineArrowRight, HiOutlinePencil } from "react-icons/hi";
+import { MdCancel } from "react-icons/md";
 
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { HiOutlineHome } from 'react-icons/hi';
-import { MdCancel } from 'react-icons/md';
+import useAuth from "../../Hooks/useAuth";
+import useAxiosPublic from "../../Hooks/useAxiosPublic";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
-import { useQuery } from '@tanstack/react-query';
-import { Helmet } from 'react-helmet-async';
+const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
 
-import useAuth from '../../Hooks/useAuth';
-import useAxiosPublic from '../../Hooks/useAxiosPublic';
-import useAxiosSecure from '../../Hooks/useAxiosSecure';
+    const date = new Date(dateString);
 
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+    if (Number.isNaN(date.getTime())) return "N/A";
+
+    return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    });
+};
+
+const statusClass = (status) => {
+    const normalized = (status || "pending")
+        .toLowerCase()
+        .replaceAll(" ", "_");
+
+    return `dashboard-status dashboard-status-${normalized}`;
+};
 
 const Userhome = () => {
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
     const axiosPublic = useAxiosPublic();
     const axiosSecure = useAxiosSecure();
-    const navigate = useNavigate();
 
-    // Fetch billing address
     const {
         data: billings = [],
         isLoading: billingLoading,
         isError: billingError,
     } = useQuery({
-        queryKey: ['billings', user?.email],
-        enabled: !!user?.email,
+        queryKey: ["billings", user?.email],
+        enabled: !loading && !!user?.email,
         queryFn: async () => {
-            const response = await axiosPublic.get(
-                `/billings?email=${encodeURIComponent(user.email)}`
-            );
+            const response = await axiosPublic.get("/billings", {
+                params: { email: user.email },
+            });
 
-            return response.data;
+            const data = response.data;
+
+            if (Array.isArray(data)) return data;
+            if (Array.isArray(data?.billings)) return data.billings;
+            if (data?._id) return [data];
+
+            return [];
         },
     });
 
-    // Fetch order history
     const {
         data: orders = [],
         isLoading: ordersLoading,
         isError: ordersError,
-        refetch,
+        refetch: refetchOrders,
     } = useQuery({
-        queryKey: ['orders', user?.email],
-        enabled: !!user?.email,
+        queryKey: ["orders", user?.email],
+        enabled: !loading && !!user?.email,
         queryFn: async () => {
-            const response = await axiosSecure.get(
-                `/orders?email=${encodeURIComponent(user.email)}`
-            );
+            const response = await axiosSecure.get("/orders", {
+                params: { email: user.email },
+            });
 
-            return response.data;
+            return Array.isArray(response.data) ? response.data : [];
         },
     });
 
-    // Format order date
-    const formatDate = (dateString) => {
-        if (!dateString) return 'N/A';
-
-        const date = new Date(dateString);
-
-        if (Number.isNaN(date.getTime())) return 'N/A';
-
-        return date.toLocaleDateString('en-US', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-        });
-    };
-
-    // Cancel order
-    const handleCancelOrder = async (orderId, status) => {
-        if (status !== 'pending') {
-            toast.info('Only pending orders can be cancelled.');
+    const handleCancelOrder = async (order) => {
+        if (order.status !== "pending") {
+            toast.info("Only pending orders can be cancelled.");
             return;
         }
 
         const confirmed = window.confirm(
-            'Are you sure you want to cancel this order?'
+            "Are you sure you want to cancel this order?"
         );
 
         if (!confirmed) return;
 
         try {
-            // Uses the cancellation route from your existing backend.
             const response = await axiosSecure.patch(
-                `/orders/${orderId}/cancel`
+                `/orders/${order._id}/cancel`
             );
 
-            if (response.data?.success || response.status === 200) {
-                toast.success('Your order has been cancelled successfully.');
-                await refetch();
-            } else {
-                toast.error('Unable to cancel the order.');
+            if (response.status >= 200 && response.status < 300) {
+                toast.success("Your order has been cancelled.");
+                await refetchOrders();
+            } 
+            else {
+                toast.error(
+                    response.data?.message || "Unable to cancel this order."
+                );
             }
-        } catch (error) {
-            console.error(
-                'Order cancellation error:',
-                error.response?.data || error.message
-            );
+        } 
+        catch (error) {
+            console.error("Order cancellation error:", error);
 
             toast.error(
-                error.response?.data?.message ||
-                'Failed to cancel the order. Please try again.'
+                error.response?.data?.message || "Failed to cancel the order. Please try again."
             );
         }
     };
 
-    // Loading state
-    if (!user) {
+    if (loading || !user) {
         return (
-            <div className="flex min-h-[300px] items-center justify-center">
-                <p className="text-gray-600">Loading user information...</p>
+            <div className="dashboard-card dashboard-empty-state">
+                {loading ? "Loading your account..." : "Please log in to continue."}
             </div>
         );
     }
 
+    const billing = billings[0];
+
     return (
-        <section className="nunito_sans">
+        <section>
             <Helmet>
-                <title>Shopery | User Home</title>
+                <title>Shopery | Dashboard Overview</title>
             </Helmet>
 
-            <ToastContainer
-                position="top-center"
-                autoClose={3000}
-                newestOnTop
-            />
+            <div className="mb-6">
+                <p className="mb-1 text-sm font-semibold text-green-700"> CUSTOMER OVERVIEW </p>
 
-            {/* User Profile and Billing Address */}
-            <div className="mb-5 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-8">
+                <h2 className="dashboard-section-title mb-2 text-[#eee]"> Welcome back, {user.displayName?.trim().split(/\s+/)[0] || "Customer"}! </h2>
 
-                {/* User Profile */}
-                <div className="h-auto rounded-lg border py-4">
-                    <div className="mb-3">
-                        <img
-                            src={
-                                user.photoURL ||
-                                'https://placehold.co/130x130?text=User'
-                            }
-                            alt="User profile"
-                            className="mx-auto h-[130px] w-[130px] rounded-full object-cover"
-                        />
-                    </div>
+                <p className="dashboard-muted-text"> Here is an overview of your account and recent shopping activity. </p>
+            </div>
 
-                    <div className="mb-2 text-center">
-                        <h3 className="mb-1 text-[18px] font-[600] text-[#333]">
-                            {user.displayName || 'Customer'}
-                        </h3>
+            <div className="mb-6 grid grid-cols-1 gap-5 md:grid-cols-2">
+                {/* Profile card */}
+                <section className="dashboard-card overflow-hidden">
+                    <div className="dashboard-card-heading">
+                        <div className="flex items-center gap-2">
+                            <HiOutlineUser className="text-xl text-green-600" />
+                            <h2>My Profile</h2>
+                        </div>
 
-                        <p className="text-[15px] font-[500] text-[#666]">
-                            Customer
-                        </p>
-                    </div>
-
-                    <div className="text-center">
-                        <Link to="/userdashboard/settings">
-                            <button
-                                type="button"
-                                className="text-center text-[19px] font-bold text-[#00B307]"
-                            >
-                                Edit Profile
-                            </button>
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Billing Address */}
-                {billingLoading ? (
-                    <div className="flex items-center justify-center rounded-lg border p-5">
-                        <p className="text-gray-500">
-                            Loading billing address...
-                        </p>
-                    </div>
-                ) : billingError ? (
-                    <div className="rounded-lg border p-5">
-                        <h3 className="mb-2 text-lg font-semibold text-red-600">
-                            Unable to load billing address
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                            Please check your connection and try again.
-                        </p>
-                    </div>
-                ) : billings.length > 0 ? (
-                    billings.map((billing) => (
-                        <div
-                            key={billing._id}
-                            className="h-auto rounded-lg border p-5"
+                        <Link to="/userdashboard/settings" className="dashboard-primary-link inline-flex items-center gap-1"
                         >
-                            <span className="text-[14px] font-[600] text-[#666]">
-                                BILLING ADDRESS
-                            </span>
-
-                            <h3 className="mb-2 mt-4 text-[20px] font-[600] text-[#333]">
-                                {billing.fullname ||
-                                    billing.fullName ||
-                                    'Name not provided'}
-                            </h3>
-
-                            <p className="mb-3 text-[15px] font-[500] text-[#666]">
-                                {billing.streetaddress ||
-                                    billing.streetAddress ||
-                                    'Address not provided'}
-                            </p>
-
-                            {billing.district && (
-                                <p className="mb-2 text-[15px] text-[#333]">
-                                    {billing.district}
-                                </p>
-                            )}
-
-                            <p className="mb-2 text-[15px] font-[500] text-[#333]">
-                                {billing.email || user.email}
-                            </p>
-
-                            <p className="mb-4 text-[15px] font-[500] text-[#333]">
-                                {billing.phone || 'Phone not provided'}
-                            </p>
-
-                            <Link to="/userdashboard/settings">
-                                <button
-                                    type="button"
-                                    className="mt-4 text-[19px] font-bold text-[#00B307]"
-                                >
-                                    Edit Address
-                                </button>
-                            </Link>
-                        </div>
-                    ))
-                ) : (
-                    <div className="rounded-lg border p-5">
-                        <span className="text-[14px] font-[600] text-[#666]">
-                            BILLING ADDRESS
-                        </span>
-
-                        <p className="mb-4 mt-4 text-[15px] text-gray-500">
-                            No billing address has been saved yet.
-                        </p>
-
-                        <Link to="/userdashboard/settings">
-                            <button
-                                type="button"
-                                className="text-[17px] font-bold text-[#00B307]"
-                            >
-                                Add Billing Address
-                            </button>
+                            <HiOutlinePencil />
+                            Edit
                         </Link>
                     </div>
-                )}
-            </div>
 
-            {/* Recent Order History */}
-            <div className="h-auto">
-                <div className="mb-8 w-full overflow-x-auto rounded-[6px] border shadow-sm">
-                    <div className="w-full min-w-[700px]">
-                        <div className="flex items-center justify-between p-4">
-                            <h2 className="text-[18px] font-bold text-[#222]">
-                                Recent Order History
-                            </h2>
+                    <div className="dashboard-card-body">
+                        <div className="mb-5 flex items-center gap-4">
+                            <img
+                                src={
+                                    user.photoURL ||
+                                    "https://placehold.co/120x120?text=User"
+                                }
+                                alt="Profile"
+                                className="h-[76px] w-[76px] rounded-full border-4 border-green-50 object-cover"
+                            />
 
-                            <Link
-                                to="/userdashboard/orderhistory"
-                                className="text-[16px] font-bold text-[#00B307]"
-                            >
-                                View All
-                            </Link>
+                            <div className="min-w-0">
+                                <h3 className="break-words text-lg font-extrabold text-gray-800"> {user.displayName || "Shopery Customer"} </h3>
+
+                                <p className="mt-1 break-all text-sm text-gray-500"> {user.email} </p>
+
+                                <span className="mt-2 inline-flex rounded-full bg-green-50 px-3 py-1 text-xs font-bold text-green-700"> Customer Account </span>
+                            </div>
                         </div>
 
-                        <table className="w-full">
-                            <thead>
-                                <tr className="rounded-t-md bg-[#F2F2F2] text-left text-[15px] font-semibold tracking-wide text-[#111]">
-                                    <th className="px-4 py-3 uppercase">
-                                        #Order ID
-                                    </th>
-
-                                    <th className="px-4 py-3 uppercase">
-                                        Date
-                                    </th>
-
-                                    <th className="px-4 py-3 uppercase">
-                                        Total
-                                    </th>
-
-                                    <th className="px-4 py-3 uppercase">
-                                        Status
-                                    </th>
-
-                                    <th className="px-4 py-3 text-center uppercase">
-                                        Action
-                                    </th>
-                                </tr>
-                            </thead>
-
-                            <tbody className="bg-white">
-                                {ordersLoading ? (
-                                    <tr>
-                                        <td
-                                            colSpan="5"
-                                            className="px-4 py-8 text-center text-gray-500"
-                                        >
-                                            Loading orders...
-                                        </td>
-                                    </tr>
-                                ) : ordersError ? (
-                                    <tr>
-                                        <td
-                                            colSpan="5"
-                                            className="px-4 py-8 text-center text-red-500"
-                                        >
-                                            Failed to load orders. Please try again later.
-                                        </td>
-                                    </tr>
-                                ) : orders.length === 0 ? (
-                                    <tr>
-                                        <td
-                                            colSpan="5"
-                                            className="px-4 py-8 text-center text-gray-500"
-                                        >
-                                            You have not placed any orders yet.
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    orders.slice(0, 5).map((order) => (
-                                        <tr
-                                            key={order._id}
-                                            className="border-b text-gray-700"
-                                        >
-                                            <td className="px-4 py-3">
-                                                <h3 className="break-all text-[14px] font-[600] text-[#191919]">
-                                                    {order._id}
-                                                </h3>
-                                            </td>
-
-                                            <td className="whitespace-nowrap px-4 py-3 text-sm font-semibold">
-                                                {formatDate(order.createdAt)}
-                                            </td>
-
-                                            <td className="px-4 py-3 text-sm font-semibold">
-                                                <div className="flex items-center justify-center">
-                                                    <span>
-                                                        ৳
-                                                        {Number(
-                                                            order.totalPrice || 0
-                                                        ).toFixed(2)}
-                                                    </span>
-                                                </div>
-                                            </td>
-
-                                            <td className="px-4 py-3">
-                                                <span
-                                                    className={`inline-block rounded-full px-3 py-1 text-sm font-semibold ${
-                                                        order.status === 'delivered'
-                                                            ? 'bg-green-100 text-green-700'
-                                                            : order.status === 'cancelled'
-                                                            ? 'bg-red-100 text-red-700'
-                                                            : 'bg-yellow-100 text-yellow-700'
-                                                    }`}
-                                                >
-                                                    {order.status || 'pending'}
-                                                </span>
-                                            </td>
-
-                                            <td className="px-4 py-3 text-center">
-                                                {order.status === 'pending' ? (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            handleCancelOrder(
-                                                                order._id,
-                                                                order.status
-                                                            )
-                                                        }
-                                                        title="Cancel Order"
-                                                        aria-label="Cancel Order"
-                                                        className="text-[22px] font-bold text-[#00B207] hover:text-red-600"
-                                                    >
-                                                        <MdCancel />
-                                                    </button>
-                                                ) : (
-                                                    <span className="text-sm text-gray-400">
-                                                        —
-                                                    </span>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                        <Link to="/userdashboard/settings" className="inline-flex items-center gap-2 text-sm font-bold text-green-700 hover:text-green-900" >
+                            Manage your profile
+                            <HiOutlineArrowRight />
+                        </Link>
                     </div>
-                </div>
+                </section>
+
+                {/* Billing card */}
+                <section className="dashboard-card">
+                    <div className="dashboard-card-heading">
+                        <div className="flex items-center gap-2">
+                            <HiOutlineLocationMarker className="text-xl text-green-600" />
+                            <h2>Billing Address</h2>
+                        </div>
+
+                        <Link to="/userdashboard/settings" className="dashboard-primary-link inline-flex items-center gap-1"
+                        >
+                            <HiOutlinePencil />
+                            Edit
+                        </Link>
+                    </div>
+
+                    <div className="dashboard-card-body">
+                        {billingLoading ? (
+                            <p className="dashboard-muted-text"> Loading billing address... </p>
+                        ) : billingError ? (
+                            <div>
+                                <p className="text-sm font-semibold text-red-600">Unable to load your billing address. </p>
+                                <p className="mt-2 text-sm text-gray-500"> Please try again later. </p>
+                            </div>
+                        ) : billing ? (
+                            <div>
+                                <h3 className="mb-2 text-base font-extrabold text-gray-800">
+                                    {billing.fullname ||
+                                    billing.fullName ||
+                                    "Name not provided"}
+                                </h3>
+
+                                <p className="text-sm leading-6 text-gray-500">
+                                    {billing.streetaddress ||
+                                    billing.streetAddress ||
+                                    "Address not provided"}
+                                </p>
+
+                                <p className="mt-1 text-sm text-gray-500">
+                                    {[billing.district, billing.division] .filter(Boolean) .join(", ") || "Location not provided"}
+                                </p>
+
+                                <p className="mt-3 break-all text-sm text-gray-600"> {billing.email || user.email} </p>
+
+                                <p className="mt-1 text-sm text-gray-600"> {billing.phone || "Phone not provided"} </p>
+                            </div>
+                        ) : (
+                            <div>
+                                <p className="mb-4 text-sm leading-6 text-gray-500"> You have not saved a billing address yet. </p>
+
+                                <Link to="/userdashboard/settings" className="inline-flex items-center gap-2 rounded-full bg-green-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-green-700"
+                                >
+                                    Add Billing Address
+                                    <HiOutlineArrowRight />
+                                </Link>
+                            </div>
+                        )}
+                    </div>
+                </section>
             </div>
+
+            {/* Order history */}
+            <section className="dashboard-card overflow-hidden">
+                <div className="dashboard-card-heading">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <HiOutlineClipboardList className="text-xl text-green-600" />
+                            <h2>Recent Orders</h2>
+                        </div>
+
+                        <p className="mt-1 text-xs text-gray-500"> Your latest shopping activity </p>
+                    </div>
+                    <Link to="/userdashboard/orderhistory" className="dashboard-primary-link inline-flex items-center gap-1"
+                    >
+                        View all
+                        <HiOutlineArrowRight />
+                    </Link>
+                </div>
+
+                <div className="dashboard-table-wrapper">
+                    <table className="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {ordersLoading ? (
+                                <tr>
+                                    <td colSpan={5} className="dashboard-empty-state">
+                                        Loading your orders...
+                                    </td>
+                                </tr>
+                            ) : ordersError ? (
+                                <tr>
+                                    <td colSpan={5} className="dashboard-empty-state">
+                                        <p className="mb-3 text-red-600"> Failed to load orders. </p>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => refetchOrders()}
+                                            className="rounded-full bg-green-600 px-4 py-2 text-xs font-bold text-white hover:bg-green-700"
+                                        >
+                                            Try again
+                                        </button>
+                                    </td>
+                                </tr>
+                            ) : orders.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="dashboard-empty-state">
+                                        <p className="mb-3"> You have not placed any orders yet. </p>
+                                        <Link to="/" className="font-bold text-green-700 hover:underline"
+                                        >
+                                            Start shopping
+                                        </Link>
+                                    </td>
+                                </tr>
+                            ) : (
+                                orders.slice(0, 5).map((order) => (
+                                    <tr key={order._id}>
+                                        <td>
+                                            <span className="block max-w-[140px] break-all font-bold text-gray-800" title={order._id} >
+                                                #{String(order._id).slice(-8).toUpperCase()}
+                                            </span>
+                                        </td>
+
+                                        <td className="whitespace-nowrap"> {formatDate(order.createdAt)} </td>
+
+                                        <td className="whitespace-nowrap font-bold text-gray-800"> ৳{Number(order.totalPrice || 0).toFixed(2)} </td>
+
+                                        <td>
+                                            <span className={statusClass(order.status)}> {(order.status || "pending").replaceAll("_", " ")} </span>
+                                        </td>
+
+                                        <td>
+                                            {order.status === "pending" ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleCancelOrder(order)}
+                                                    title="Cancel order"
+                                                    aria-label="Cancel order"
+                                                    className="rounded-lg p-2 text-xl text-gray-400 transition hover:bg-red-50 hover:text-red-600"
+                                                >
+                                                    <MdCancel />
+                                                </button>
+                                            ) : (
+                                                <span className="text-gray-300">—</span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </section>
     );
 };

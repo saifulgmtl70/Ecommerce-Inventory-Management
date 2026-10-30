@@ -1,17 +1,6 @@
 import { Helmet } from "react-helmet-async";
-import {
-    Link,
-    useLocation,
-    Navigate,
-} from "react-router-dom";
-import {
-    FaCheckCircle,
-    FaTimesCircle,
-    FaExclamationTriangle,
-    FaHome,
-    FaClipboardList,
-    FaRedo,
-} from "react-icons/fa";
+import { Link, useLocation, Navigate} from "react-router-dom";
+import { FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaHome, FaClipboardList, FaRedo, } from "react-icons/fa";
 
 const RESULT_DETAILS = {
     success: {
@@ -52,15 +41,7 @@ const PaymentResult = () => {
         return <Navigate to="/checkout" replace />;
     }
 
-    const {
-        result,
-        paymentMethod,
-        paymentName,
-        phone,
-        amount,
-        orderId,
-        checkoutData,
-    } = data;
+    const { result, paymentMethod, paymentName, phone, amount, orderId, checkoutData } = data;
 
     const details = RESULT_DETAILS[result];
     const ResultIcon = details.icon;
@@ -81,72 +62,44 @@ const PaymentResult = () => {
                 <div className={`${details.background} px-6 py-10 text-center`}>
                     <ResultIcon className={`mx-auto mb-4 text-6xl ${details.color}`} />
 
-                    <h1 className="text-2xl font-bold text-gray-800">
-                        {details.title}
-                    </h1>
+                    <h1 className="text-2xl font-bold text-gray-800"> {details.title}</h1>
 
-                    <p className="mx-auto mt-3 max-w-md text-sm text-gray-600">
-                        {details.message}
-                    </p>
+                    <p className="mx-auto mt-3 max-w-md text-sm text-gray-600"> {details.message} </p>
                 </div>
 
                 <div className="p-6 md:p-8">
                     <div className="mb-6 rounded-xl border p-5">
-                        <p className="text-sm text-gray-500">
-                             Transaction amount
-                        </p>
+                        <p className="text-sm text-gray-500"> Transaction amount </p>
 
-                        <p className="mt-1 text-3xl font-bold text-gray-800">
-                            ৳{formattedAmount}
-                        </p>
+                        <p className="mt-1 text-3xl font-bold text-gray-800"> ৳{formattedAmount} </p>
 
                         <div className="mt-5 space-y-3 text-sm">
                             <div className="flex justify-between gap-4">
-                                <span className="text-gray-500">
-                                    Payment Method
-                                </span>
-                                <span className="font-semibold">
-                                    {paymentName || paymentMethod || "Demo"}
-                                </span>
+                                <span className="text-gray-500"> Payment Method </span>
+                                <span className="font-semibold"> {paymentName || paymentMethod || "Demo"} </span>
                             </div>
 
                             <div className="flex justify-between gap-4">
-                                <span className="text-gray-500">
-                                    Mobile Number
-                                </span>
-                                <span className="font-semibold">
-                                    {phone || "Not provided"}
-                                </span>
+                                <span className="text-gray-500"> Mobile Number </span>
+                                <span className="font-semibold"> {phone || "Not provided"} </span>
                             </div>
 
                             <div className="flex justify-between gap-4">
-                                <span className="text-gray-500">
-                                    Payment Type
-                                </span>
-                                <span className="font-semibold">
-                                    Simulation only
-                                </span>
+                                <span className="text-gray-500"> Payment Type </span>
+                                <span className="font-semibold"> Simulation only </span>
                             </div>
 
                             {orderId && (
                                 <div className="flex justify-between gap-4">
-                                    <span className="text-gray-500">
-                                        Order ID
-                                    </span>
-                                    <span className="break-all text-right font-semibold">
-                                        {orderId}
-                                    </span>
+                                    <span className="text-gray-500"> Order ID</span>
+                                    <span className="break-all text-right font-semibold"> {orderId} </span>
                                 </div>
                             )}
 
                             {succeeded && (
                                 <div className="flex justify-between gap-4">
-                                    <span className="text-gray-500">
-                                        Order Status
-                                    </span>
-                                    <span className="font-semibold text-amber-600">
-                                        Pending
-                                    </span>
+                                    <span className="text-gray-500"> Order Status </span>
+                                    <span className="font-semibold text-amber-600"> Pending </span>
                                 </div>
                             )}
                         </div>
@@ -155,17 +108,13 @@ const PaymentResult = () => {
                     
                     <div className="flex flex-col gap-3">
                         {succeeded ? (
-                            <Link
-                                to="/userdashboard/orderhistory"
-                                replace
-                                className="flex items-center justify-center gap-2 rounded-lg bg-[#00B207] px-5 py-3 font-semibold text-white hover:bg-green-700"
+                            <Link to="/userdashboard/orderhistory" replace className="flex items-center justify-center gap-2 rounded-lg bg-[#00B207] px-5 py-3 font-semibold text-white hover:bg-green-700"
                             >
                                 <FaClipboardList />
                                 View Order History
                             </Link>
                         ) : (
-                            <Link
-                                to="/checkout"
+                            <Link to="/checkout"
                                 state={{
                                     quantities: {},
                                     totalPrice: Number(checkoutData?.totalPrice || amount || 0),
@@ -177,9 +126,7 @@ const PaymentResult = () => {
                             </Link>
                         )}
 
-                        <Link
-                            to="/"
-                            className="flex items-center justify-center gap-2 rounded-lg border border-gray-300 px-5 py-3 font-semibold text-gray-700 hover:bg-gray-50"
+                        <Link to="/" className="flex items-center justify-center gap-2 rounded-lg border border-gray-300 px-5 py-3 font-semibold text-gray-700 hover:bg-gray-50"
                         >
                             <FaHome />
                             Back to Home
